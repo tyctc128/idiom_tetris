@@ -73,6 +73,25 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.6;strok
 #bookBtn{cursor:pointer;background:#fff1f5}#bookBtn b{color:#e0406a}
 .scard .combo{position:absolute;left:0;right:0;margin:auto;width:max-content;top:calc(100% + 14px);z-index:4;padding:3px 16px}
 .scard .combo b{font-size:26px}.scard .combo span{font-size:15px}
+/* 寶箱：每過兩關得到一個，遊戲中點擊可清空所有堆積的磚塊 */
+.chest{position:relative;align-self:center;display:flex;flex-direction:column;align-items:center;gap:0;border:3px solid #fff;border-radius:18px;padding:6px 16px 4px;background:linear-gradient(180deg,#fff6c9,#ffd25e);box-shadow:0 5px 0 #d99a1a,0 0 22px rgba(255,200,60,.7);animation:chestglow 1.6s ease-in-out infinite;font:inherit;color:#7a4b00}
+.chest .ci svg{display:block;width:56px;height:47px}
+.chest small{font-size:14px;white-space:nowrap}
+.chest .cn{position:absolute;top:-11px;right:-11px;min-width:28px;height:28px;padding:0 6px;border-radius:14px;background:#ff4f7e;color:#fff;font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:16px;display:grid;place-items:center;border:2.5px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.chest.empty{background:#f1edf8;box-shadow:0 5px 0 #d8cfea;animation:none;color:#9a8cb3}
+.chest.empty .ci svg{filter:grayscale(1) opacity(.55)}
+.chest.empty .cn{background:#b9b3c9}
+.chest:active{transform:translateY(4px)}
+@keyframes chestglow{50%{box-shadow:0 5px 0 #d99a1a,0 0 36px 10px rgba(255,210,80,.95);transform:translateY(-3px)}}
+#chestGet{position:fixed;inset:0;z-index:46;display:none;place-items:center;pointer-events:none;overflow:hidden}
+#chestGet.show{display:grid}
+#chestGet .rays{position:absolute;width:900px;height:900px;left:50%;top:50%;margin:-450px 0 0 -450px;border-radius:50%;background:repeating-conic-gradient(rgba(255,230,140,.55) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0 15%,transparent 62%);mask:radial-gradient(circle,#000 0 15%,transparent 62%);animation:spin 6s linear infinite,cgfade 2.6s ease forwards}
+#chestGet .box{position:relative;text-align:center;animation:cgpop 2.6s ease forwards}
+#chestGet .ci svg{width:190px;height:158px;filter:drop-shadow(0 10px 0 rgba(0,0,0,.2))}
+#chestGet h2{margin:4px 0 6px;font-family:var(--cute);font-weight:400;font-size:56px;letter-spacing:8px;color:#fff;-webkit-text-stroke:3px #d98a00;paint-order:stroke fill;text-shadow:0 5px 0 #d98a00}
+#chestGet p{display:inline-block;margin:0;background:#fff;border-radius:999px;padding:6px 18px;font-size:18px;color:#7a4b00;box-shadow:0 4px 0 #d99a1a}
+@keyframes cgpop{0%{transform:scale(.2) rotate(-12deg);opacity:0}14%{transform:scale(1.15) rotate(3deg);opacity:1}24%{transform:scale(1) rotate(0)}86%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.92) translateY(-24px)}}
+@keyframes cgfade{0%{opacity:0}15%,80%{opacity:1}100%{opacity:0}}
 .grow{flex:1}
 .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:3px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
@@ -259,7 +278,7 @@ button.hud{font:inherit;color:inherit;width:100%}
 
 /* 直放（iPad 直拿）：上方依序是標題列、題目、組字盤；下方遊戲區置中，左右兩側放資訊與控制鈕，整頁不需捲動 */
 body.portrait .stage{grid-template-columns:minmax(0,1fr) calc(var(--cell)*8 + 30px) minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto;
-  grid-template-areas:"q q q" "tray tray tray" "buddy board stats" "tools board stats" ". board ." "padl board padr";gap:10px 14px;padding:10px 12px 8px}
+  grid-template-areas:"q q q" "tray tray tray" "buddy board stats" "tools board stats" ". board chest" "padl board padr";gap:10px 14px;padding:10px 12px 8px}
 body.portrait .col{display:contents}
 body.portrait .grow{display:none}
 body.portrait .tools{grid-area:tools;align-self:start}
@@ -275,6 +294,7 @@ body.portrait .scard{grid-area:stats;align-self:start}
 body.portrait #bDown{order:3}
 body.portrait .padl{grid-area:padl}
 body.portrait .padr{grid-area:padr}
+body.portrait .chest{grid-area:chest;align-self:end;margin-bottom:24px}
 body.portrait .cbtn{width:62px;height:62px;font-size:28px}
 body.portrait .cbtn.main{width:76px;height:76px;font-size:34px}
 body.portrait .slot{width:44px;height:44px}
@@ -349,6 +369,7 @@ body.portrait .slot .tile{font-size:24px}
         <div class="combo hide" id="combo"><b id="comboN">0</b><span>連擊!</span></div>
       </div>
       <div class="grow"></div>
+      <button class="chest empty" id="chestBtn" title="使用寶箱（B）"><span class="ci"></span><small>寶箱</small><span class="cn" id="chestN">0</span></button>
       <div class="pad padr">
         <button class="cbtn" id="bRot"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><small>旋轉</small></button>
         <button class="cbtn main" id="bHard"><svg class="ic" viewBox="0 0 24 24"><path d="M7 5l5 5 5-5"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg><small>直接落下</small></button>
@@ -367,6 +388,7 @@ body.portrait .slot .tile{font-size:24px}
     <b>玩法一・成語填充</b>：上方掉下四條答案磚塊，點選正確的那條，移動、旋轉後放到底部（形狀不能改）。<br>
     <b>玩法二・看解釋湊成語</b>：依順序點四個字放進組字盤，選形狀、旋轉後放到底部。<br>
     答對：其他磚塊全部爆破，答對的磚塊留在底部！答錯：所有磚塊亂竄，亂七八糟地堆下來。磚塊排滿一整排會消除。每 8 題過一關。<br>
+    <b>寶箱</b>：每過兩關得到一個寶箱，遊戲中點寶箱（或按 <span class="kbd">B</span>），堆積的磚塊會全部閃光消失！<br>
     <b>電腦</b>：<span class="kbd">←</span><span class="kbd">→</span> 移動　<span class="kbd">↑</span> 旋轉　<span class="kbd">↓</span> 加速　<span class="kbd">空白鍵</span> 直接落下　<span class="kbd">Tab</span>／<span class="kbd">1~4</span> 換選項　<span class="kbd">C</span> 換形狀　<span class="kbd">P</span> 暫停<br>
     <b>iPad</b>：點磚塊選擇、左右滑動移動、點一下旋轉、快速往下滑直接落下，也可用畫面兩側按鈕。
   </div>
@@ -399,6 +421,7 @@ body.portrait .slot .tile{font-size:24px}
 </div></div>
 
 <div id="stageIn"><div class="band"></div><div class="txt"><div id="siNum">STAGE 1</div><h2 id="siName">春日竹林</h2></div></div>
+<div id="chestGet"><div class="rays"></div><div class="box"><span class="ci"></span><h2>獲得寶箱！</h2><p>遊戲中點右邊的寶箱，堆積的磚塊會全部消失</p></div></div>
 <div id="flash"></div>
 
 <script>
@@ -513,6 +536,8 @@ const SFX={
     if(n>=2)[84,88,91].forEach(m=>tone(midi(m),e,.45,{type:'triangle',v:.09}));
     if(n>=4){[[84,0],[88,.1],[91,.2],[96,.3]].forEach(([m,d])=>tone(midi(m),e+.15+d,.5,{type:'square',v:.06}));[96,100,103].forEach(m=>tone(midi(m),e+.5,.9,{type:'triangle',v:.1}));twinkle(e+.5,16,.06)}},
   combo(k=3){const t=ac();const b=84+Math.min(k,8)*2;tone(midi(b),t,.07,{type:'square',v:.08});tone(midi(b+7),t+.07,.18,{type:'triangle',v:.2});bell(midi(b+12),t+.07,.08)},
+  chest(){const t=ac();noise(t,.9,{v:.08,f:500,f2:12000,q:3});for(let i=0;i<16;i++)tone(midi(72+i*2),t+i*.035,.15,{type:'triangle',v:.12});[84,88,91,96,100].forEach(m=>tone(midi(m),t+.62,1.3,{type:'triangle',v:.08}));tone(midi(108),t+.62,.8,{v:.05});twinkle(t+.55,26,.05)},
+  chestGet(){const t=ac();[[72,0],[79,.1],[84,.2],[88,.3],[91,.42],[96,.56]].forEach(([m,d])=>{tone(midi(m),t+d,.16,{type:'square',v:.07});tone(midi(m),t+d,.2,{type:'triangle',v:.12})});[84,88,91,96].forEach(m=>tone(midi(m),t+.7,1.2,{type:'triangle',v:.09}));twinkle(t+.7,22,.06)},
   levelup(){const t=ac();[[79,0],[84,.12],[88,.24],[91,.36]].forEach(([m,d])=>{tone(midi(m),t+d,.12,{type:'square',v:.08});tone(midi(m),t+d,.12,{type:'triangle',v:.14})});[84,88,91,96].forEach(m=>tone(midi(m),t+.5,1,{type:'triangle',v:.1}));tone(midi(96),t+.5,1,{type:'square',v:.05});twinkle(t+.5,18,.05)},
   danger(){const t=ac();tone(75,t,.12,{v:.7,to:42});tone(75,t+.17,.15,{v:.55,to:42})},
   gameover(){const t=ac();[84,79,76,72,67,60].forEach((m,i)=>tone(midi(m),t+i*.18,.3,{type:'triangle',v:.17}));tone(midi(48),t+1.1,1,{type:'square',v:.06})},
@@ -563,7 +588,7 @@ let S={phase:'idle',level:1};
 function freshState(level){
   let best=0;try{best=+localStorage.getItem('idiomTetrisBest')||0}catch(e){}
   return{phase:'idle',level,qIndex:0,queue:[],q:null,grid:newGrid(),pieces:[],active:null,tray:[],shape:'I',
-    score:0,combo:0,lines:0,best,wrong:[],correct:0,total:0,groupT:0,gravT:0,soft:false,flash:new Set(),qStart:0,lastDanger:0,run:0};
+    score:0,combo:0,lines:0,chests:0,cleared:0,best,wrong:[],correct:0,total:0,groupT:0,gravT:0,soft:false,flash:new Set(),qStart:0,lastDanger:0,run:0};
 }
 
 /* ================= 格子工具 ================= */
@@ -635,6 +660,7 @@ function updateHUD(){
   $('score').textContent=S.score.toLocaleString();$('lines').textContent=S.lines;$('best').textContent=Math.max(S.best,S.score).toLocaleString();$('wrongN').textContent=S.wrong.length;
   $('stars').innerHTML=Array.from({length:8},(_,i)=>`<i class="${i<S.qIndex?'on':i===S.qIndex?'cur':''}"></i>`).join('');$('qcount').textContent=`${Math.min(S.qIndex+1,8)}/8`;
   const cb=$('combo');$('comboN').textContent=S.combo;cb.classList.toggle('hide',S.combo<2);
+  $('chestN').textContent=S.chests||0;$('chestBtn').classList.toggle('empty',!S.chests);
 }
 function bumpCombo(){const cb=$('combo');cb.classList.remove('bump');void cb.offsetWidth;cb.classList.add('bump')}
 function addScore(n){S.score+=n;updateHUD()}
@@ -751,6 +777,9 @@ async function levelComplete(){
   const run=S.run;S.phase='resolve';
   const bonus=300*S.level;addScore(bonus);popText(`過關！ +${bonus}`,45);
   await sleep(900);if(run!==S.run)return;
+  // 每過兩關得到一個寶箱（最後一關結束就直接結算，不再給）
+  S.cleared++;
+  if(S.cleared%2===0&&S.level<5){S.chests++;updateHUD();await showChestGet();if(run!==S.run)return}
   if(S.level>=5){finish(true);return}
   // 比照俄羅斯方塊：過關不清盤，之前堆的磚塊保留到下一關
   S.level++;S.qIndex=0;applyTheme(S.level,true);buildQueue(S.level);S.pieces=[];S.active=null;S.tray=[];draw();updateHUD();
@@ -861,6 +890,38 @@ function chaos(movers){
     made.forEach(cell=>cell.hideUntil=performance.now()+dur+delay);
   });
   return total+40;
+}
+/* ================= 寶箱 ================= */
+const CHEST_SVG='<svg viewBox="0 0 120 100" aria-hidden="true"><path d="M14 46 Q14 14 60 14 Q106 14 106 46 Z" fill="#d07a2c" stroke="#7a3f12" stroke-width="4" stroke-linejoin="round"/><path d="M26 30 Q40 21 58 20" stroke="#fff" stroke-width="4" opacity=".45" fill="none" stroke-linecap="round"/><rect x="14" y="46" width="92" height="44" rx="6" fill="#a95c1f" stroke="#7a3f12" stroke-width="4"/><rect x="28" y="17" width="11" height="73" fill="#ffcf3a" stroke="#b07a00" stroke-width="2"/><rect x="81" y="17" width="11" height="73" fill="#ffcf3a" stroke="#b07a00" stroke-width="2"/><rect x="9" y="41" width="102" height="10" rx="4" fill="#ffd84a" stroke="#b07a00" stroke-width="3"/><rect x="49" y="38" width="22" height="26" rx="5" fill="#ffe680" stroke="#b07a00" stroke-width="3"/><circle cx="60" cy="49" r="3.6" fill="#7a3f12"/><rect x="58.3" y="50" width="3.4" height="7" rx="1.5" fill="#7a3f12"/></svg>';
+document.querySelectorAll('.ci').forEach(e=>e.innerHTML=CHEST_SVG);
+async function showChestGet(){
+  const el=$('chestGet');el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+  SFX.chestGet();setFace('happy','哇！得到寶箱了！危險的時候再用喔～');
+  await sleep(2600);el.classList.remove('show');
+}
+async function useChest(){
+  if(S.phase!=='play')return;
+  if(!S.chests){setFace('normal','每過兩關就能得到一個寶箱喔！');SFX.move();return}
+  const cells=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(S.grid[r][c])cells.push([c,r,S.grid[r][c]]);
+  if(!cells.length){setFace('normal','現在沒有堆積的磚塊，先留著寶箱吧～');SFX.move();return}
+  const run=S.run;S.chests--;updateHUD();S.phase='resolve';
+  SFX.chest();setFace('happy','寶箱魔法！全部消失～');
+  // 第一段：所有堆積的磚塊一起發光閃爍，遊戲區放出光芒
+  const midR=(Math.min(...cells.map(c=>c[1]))+ROWS)/2,cx=COLS*CELL/2,cy=midR*CELL;
+  S.flash=new Set(cells.map(c=>c[1]));draw();
+  fxEl('rays',cx,cy);fxEl('core',cx,cy);
+  for(const r of S.flash){const g=document.createElement('div');g.className='rowglow';g.style.top=(r*CELL-CELL*.2)+'px';g.style.height=CELL*1.4+'px';fx.appendChild(g);setTimeout(()=>g.remove(),1100)}
+  await sleep(650);if(run!==S.run)return;
+  // 第二段：由中央往外一圈圈眩光消失，噴出星星
+  flashScreen(.55);SFX.glare();
+  cells.forEach(([c,r,g])=>{const d=Math.hypot(c-(COLS-1)/2,r-midR)*60;
+    const t=cloneTile(c,r,g.ch,(g.kind==='gold'?'c'+g.color:'garbage')+' glare');t.style.animationDelay=d+'ms';setTimeout(()=>t.remove(),1400+d);
+    setTimeout(()=>sparks(c*CELL+CELL/2,r*CELL+CELL/2,4,2),d+100)});
+  S.grid=newGrid();S.flash=new Set();draw();
+  setTimeout(()=>{fxEl('ring',cx,cy);fxEl('ring',cx,cy)},200);
+  await sleep(1100);if(run!==S.run)return;
+  popText('全部清空！',50);
+  S.phase='play';S.gravT=0;S.groupT=0;draw();
 }
 function collapse(){
   let moved=false;
@@ -996,6 +1057,7 @@ addEventListener('keydown',e=>{
   if($('ovStart').classList.contains('show')){if(k==='Enter'||k===' '){e.preventDefault();startGame(1)}return}
   if(k==='p'||k==='P'||k==='Escape'){togglePause();return}
   if(!canPlay())return;
+  if(k==='b'||k==='B'){useChest();return}
   const map={ArrowLeft:()=>move(-1),ArrowRight:()=>move(1),ArrowUp:rotate,x:rotate,X:rotate,' ':hardDrop,Tab:()=>cycleOption(e.shiftKey?-1:1),c:cycleShape,C:cycleShape,Backspace:()=>returnChar(S.tray.length-1)};
   if(k==='ArrowDown'){e.preventDefault();if(S.q.type==='fill')ensureActive();S.soft=true;return}
   if(map[k]){e.preventDefault();map[k]();return}
@@ -1006,6 +1068,7 @@ addEventListener('keyup',e=>{if(e.key==='ArrowDown')S.soft=false});
 $('startBtn').onclick=()=>startGame(1);
 const lvsel=$('lvsel');[1,2,3,4,5].forEach(n=>{const b=document.createElement('button');b.textContent=`${n} ${THEMES[n].name}`;b.onclick=()=>startGame(n);lvsel.appendChild(b)});
 $('pauseBtn').onclick=()=>togglePause();
+$('chestBtn').onclick=()=>{ac();useChest()};
 $('resumeBtn').onclick=()=>togglePause(false);
 $('restartBtn').onclick=()=>startGame(1);
 $('homeBtn').onclick=goHome;$('endHomeBtn').onclick=goHome;
