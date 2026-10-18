@@ -49,19 +49,30 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.6;strok
 /* ===== 版面 ===== */
 #app{position:relative;z-index:2;height:100vh;height:100dvh;overflow:hidden}
 /* 橫放：題目在左上、遊戲區在中間佔滿高度、右側窄欄放資訊；控制鈕在左右下角 */
-.stage{height:100%;display:grid;grid-template-columns:minmax(230px,300px) calc(var(--cell)*8 + 30px) minmax(150px,190px);grid-template-rows:minmax(0,1fr);column-gap:22px;justify-content:center;padding:14px 14px 10px}
+.stage{height:100%;display:grid;grid-template-columns:minmax(230px,300px) calc(var(--cell)*8 + 30px) minmax(160px,200px);grid-template-rows:minmax(0,1fr);column-gap:22px;justify-content:center;padding:14px 14px 10px}
 .col{display:flex;flex-direction:column;gap:12px;min-height:0}
 .boardwrap{min-height:0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px}
-.topbar{display:flex;flex-direction:column;align-items:center;gap:8px}
-.topbar .logo .lt{width:30px;height:30px;font-size:18px;border-radius:9px}
-.right .ribbon{white-space:nowrap;font-size:15px;padding:5px 22px;letter-spacing:1px}
-.stats{display:grid;grid-template-columns:1fr;gap:6px;background:#fff;border-radius:18px;border:3px solid var(--frame);box-shadow:0 5px 0 var(--frame-d);padding:8px}
-.st{display:flex;align-items:center;justify-content:space-between;gap:6px;white-space:nowrap;background:#f7f3fd;border-radius:12px;padding:3px 10px;border:none;font:inherit;color:inherit}
-.st.big{flex-direction:column}
-.st small{font-size:12px;color:#8a77a8}
-.st b{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:18px;color:var(--accent);line-height:1.3}
-.st.big{grid-column:1/-1}.st.big b{font-size:26px}
-.st.wide{cursor:pointer}
+/* 右欄計分卡：關卡標題、進度條、分數、三項小統計；連擊徽章浮在卡片右下角，不推擠版面 */
+.scard{position:relative;background:#fff;border-radius:20px;border:3px solid var(--frame);box-shadow:0 5px 0 var(--frame-d),0 12px 24px rgba(0,0,0,.12);padding-bottom:10px;min-width:0}
+.sc-head{border-radius:16px 16px 0 0;background:linear-gradient(135deg,var(--accent),var(--frame-d));color:#fff;text-align:center;padding:6px 8px 7px;text-shadow:0 2px 0 var(--accent-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-head b{display:block;font-weight:400;font-size:12px;letter-spacing:4px;opacity:.9}
+.sc-head span{font-size:19px;letter-spacing:3px}
+.sc-prog{display:flex;align-items:center;gap:6px;padding:9px 10px 2px}
+.dots{flex:1;display:flex;gap:3px;min-width:0}
+.dots i{flex:1;height:9px;border-radius:5px;background:#ece6f6}
+.dots i.on{background:linear-gradient(90deg,#ffd23f,#ffa51f);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.dots i.cur{background:color-mix(in srgb,var(--accent) 45%,#fff);animation:blink 1.2s ease-in-out infinite}
+.sc-prog span{font-size:13px;color:#8a77a8;white-space:nowrap}
+.sc-score{text-align:center;padding:4px 8px 6px}
+.sc-score small{display:block;font-size:12px;color:#8a77a8;letter-spacing:2px}
+.sc-score b{display:block;font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:30px;line-height:1.1;color:var(--accent);text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 22%,#fff);white-space:nowrap}
+.sc-mini{display:flex;flex-direction:column;gap:4px;padding:0 8px}
+.sc-mini>*{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#f7f3fd;border-radius:10px;padding:3px 10px;border:none;font:inherit;color:inherit;white-space:nowrap;min-width:0}
+.sc-mini small{font-size:13px;color:#8a77a8}
+.sc-mini b{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:16px;color:var(--ink)}
+#bookBtn{cursor:pointer;background:#fff1f5}#bookBtn b{color:#e0406a}
+.scard .combo{position:absolute;left:0;right:0;margin:auto;width:max-content;top:calc(100% + 14px);z-index:4;padding:3px 16px}
+.scard .combo b{font-size:26px}.scard .combo span{font-size:15px}
 .grow{flex:1}
 .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:3px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
@@ -73,7 +84,7 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.6;strok
 .ribbon{position:relative;padding:6px 26px;background:var(--accent);color:#fff;font-size:17px;letter-spacing:2px;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);text-shadow:0 2px 0 var(--accent-d);box-shadow:inset 0 -4px 0 var(--accent-d)}
 .ribbon b{font-weight:400;opacity:.85;margin-right:8px}
 .tools{display:flex;gap:10px;justify-content:center}
-.rbtn{width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:var(--accent);color:#fff;font-size:22px;display:grid;place-items:center;box-shadow:0 4px 0 var(--accent-d),0 6px 12px rgba(0,0,0,.15)}
+.rbtn{width:44px;height:44px;border-radius:50%;border:3px solid #fff;background:var(--accent);color:#fff;font-size:22px;display:grid;place-items:center;box-shadow:0 4px 0 var(--accent-d),0 6px 12px rgba(0,0,0,.15)}
 .rbtn.off{background:#b9b3c9;box-shadow:0 4px 0 #8c86a6}
 .stars{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:wrap}
 .stars svg{width:20px;height:20px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
@@ -248,10 +259,10 @@ button.hud{font:inherit;color:inherit;width:100%}
 
 /* 直放（iPad 直拿）：上方依序是標題列、題目、組字盤；下方遊戲區置中，左右兩側放資訊與控制鈕，整頁不需捲動 */
 body.portrait .stage{grid-template-columns:minmax(0,1fr) calc(var(--cell)*8 + 30px) minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto;
-  grid-template-areas:"top top top" "q q q" "tray tray tray" "buddy board stats" "buddy board combo" "padl board padr";gap:10px 14px;padding:10px 12px 8px}
+  grid-template-areas:"q q q" "tray tray tray" "buddy board stats" "tools board stats" ". board ." "padl board padr";gap:10px 14px;padding:10px 12px 8px}
 body.portrait .col{display:contents}
 body.portrait .grow{display:none}
-body.portrait .topbar{grid-area:top;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px 14px}
+body.portrait .tools{grid-area:tools;align-self:start}
 body.portrait .qbox{grid-area:q;margin-top:12px;padding:22px 60px 12px 16px}
 body.portrait .qtext{min-height:3.5em;font-size:22px}
 body.portrait .tray{grid-area:tray;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;height:62px;padding:4px 10px}
@@ -260,9 +271,8 @@ body.portrait .buddy{grid-area:buddy;flex-direction:column;align-items:center;al
 body.portrait .bubble{margin:0;font-size:14px;text-align:center}
 body.portrait .bubble::after{display:none}
 body.portrait .boardwrap{grid-area:board}
-body.portrait .stats{grid-area:stats;align-self:start}
+body.portrait .scard{grid-area:stats;align-self:start}
 body.portrait #bDown{order:3}
-body.portrait .combo{grid-area:combo;align-self:start;justify-self:center;margin-top:8px}
 body.portrait .padl{grid-area:padl}
 body.portrait .padr{grid-area:padr}
 body.portrait .cbtn{width:62px;height:62px;font-size:28px}
@@ -322,23 +332,22 @@ body.portrait .slot .tile{font-size:24px}
     </div>
 
     <div class="col right">
-      <div class="topbar">
-        <div class="logo"><span class="lt">成</span><span class="lt">語</span><span class="lt">方</span><span class="lt">塊</span></div>
-        <div class="ribbon" id="ribbon"><b>第一關</b>春日竹林</div>
-        <div class="stars" id="stars"></div>
-        <div class="tools">
-          <button class="rbtn" id="musicBtn" title="背景音樂"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
-          <button class="rbtn" id="sfxBtn" title="音效"><svg class="ic" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button>
-          <button class="rbtn" id="pauseBtn" title="暫停"><svg class="ic" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      <div class="tools">
+        <button class="rbtn" id="musicBtn" title="背景音樂"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+        <button class="rbtn" id="sfxBtn" title="音效"><svg class="ic" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button>
+        <button class="rbtn" id="pauseBtn" title="暫停"><svg class="ic" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      </div>
+      <div class="scard">
+        <div class="sc-head" id="ribbon"><b>第一關</b><span>春日竹林</span></div>
+        <div class="sc-prog"><div class="dots" id="stars"></div><span id="qcount">1/8</span></div>
+        <div class="sc-score"><small>分數</small><b id="score">0</b></div>
+        <div class="sc-mini">
+          <div><small>消除行數</small><b id="lines">0</b></div>
+          <div><small>最高分</small><b id="best">0</b></div>
+          <button id="bookBtn" title="打開錯題本"><small>錯題本 ›</small><b id="wrongN">0</b></button>
         </div>
+        <div class="combo hide" id="combo"><b id="comboN">0</b><span>連擊!</span></div>
       </div>
-      <div class="stats">
-        <div class="st big"><small>分數</small><b id="score">0</b></div>
-        <div class="st"><small>消除</small><b id="lines">0</b></div>
-        <div class="st"><small>最高分</small><b id="best">0</b></div>
-        <button class="st wide" id="bookBtn"><small>錯題本</small><b id="wrongN">0</b></button>
-      </div>
-      <div class="combo hide" id="combo"><b id="comboN">0</b><span>連擊!</span></div>
       <div class="grow"></div>
       <div class="pad padr">
         <button class="cbtn" id="bRot"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><small>旋轉</small></button>
@@ -607,7 +616,7 @@ function fitCell(){
 /* ================= 主題 ================= */
 function applyTheme(n,anim){
   document.body.dataset.theme=n;const T=THEMES[n];
-  $('ribbon').innerHTML=`<b>${T.n}</b>${T.name}`;
+  $('ribbon').innerHTML=`<b>${T.n}</b><span>${T.name}</span>`;
   $('rays').style.display=T.rays?'':'none';$('aurora').style.display=T.aurora?'':'none';
   const sky=$('sky');sky.innerHTML='';
   if(T.clouds)for(let i=0;i<5;i++){const c=document.createElement('div');c.className='cloud';c.style.width=(120+Math.random()*90)+'px';c.style.top=(6+Math.random()*40)+'%';c.style.animationDuration=(70+Math.random()*60)+'s';c.style.animationDelay=(-Math.random()*120)+'s';sky.appendChild(c)}
@@ -624,8 +633,7 @@ function applyTheme(n,anim){
 function setFace(f,txt){const ms=$('mascot');ms.dataset.face=f;ms.classList.remove('jump','shake');void ms.getBBox();if(f==='happy')ms.classList.add('jump');if(f==='shock')ms.classList.add('shake');if(txt)$('bubble').textContent=txt}
 function updateHUD(){
   $('score').textContent=S.score.toLocaleString();$('lines').textContent=S.lines;$('best').textContent=Math.max(S.best,S.score).toLocaleString();$('wrongN').textContent=S.wrong.length;
-  const star='<polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9"/>';
-  $('stars').innerHTML=Array.from({length:8},(_,i)=>`<svg viewBox="0 0 24 24" class="${i<S.qIndex?'on':'off'}">${star}</svg>`).join('')+`<span>${Math.min(S.qIndex+1,8)} / 8</span>`;
+  $('stars').innerHTML=Array.from({length:8},(_,i)=>`<i class="${i<S.qIndex?'on':i===S.qIndex?'cur':''}"></i>`).join('');$('qcount').textContent=`${Math.min(S.qIndex+1,8)}/8`;
   const cb=$('combo');$('comboN').textContent=S.combo;cb.classList.toggle('hide',S.combo<2);
 }
 function bumpCombo(){const cb=$('combo');cb.classList.remove('bump');void cb.offsetWidth;cb.classList.add('bump')}
