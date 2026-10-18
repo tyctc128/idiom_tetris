@@ -186,6 +186,8 @@ button.hud{font:inherit;color:inherit;width:100%}
 @keyframes rowglow{from{opacity:.35;transform:scaleY(.7)}to{opacity:1;transform:scaleY(1.15)}}
 .rowsweep{position:absolute;left:0;width:45%;pointer-events:none;z-index:6;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95) 45%,#fff 50%,rgba(255,255,255,.95) 55%,transparent);filter:blur(2px);animation:rowsweep .55s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes rowsweep{from{transform:translateX(-110%)}to{transform:translateX(240%)}}
+.chaos{position:absolute;z-index:5;pointer-events:none;transform-origin:center}
+.chaos .tile{filter:drop-shadow(0 0 6px rgba(255,70,110,.9))}
 .fxe{position:absolute;pointer-events:none;transform:translate(-50%,-50%)}
 .core{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff6c0 35%,transparent 70%);animation:core .9s ease-out forwards}
 @keyframes core{0%{transform:translate(-50%,-50%) scale(.2)}100%{transform:translate(-50%,-50%) scale(11);opacity:0}}
@@ -355,7 +357,7 @@ body.portrait .slot .tile{font-size:24px}
   <div class="help">
     <b>玩法一・成語填充</b>：上方掉下四條答案磚塊，點選正確的那條，移動、旋轉後放到底部（形狀不能改）。<br>
     <b>玩法二・看解釋湊成語</b>：依順序點四個字放進組字盤，選形狀、旋轉後放到底部。<br>
-    答對：其他磚塊全部爆破！答錯：所有磚塊直接掉下來。磚塊排滿一整排會消除。每 8 題過一關。<br>
+    答對：其他磚塊全部爆破，答對的磚塊留在底部！答錯：所有磚塊亂竄，亂七八糟地堆下來。磚塊排滿一整排會消除。每 8 題過一關。<br>
     <b>電腦</b>：<span class="kbd">←</span><span class="kbd">→</span> 移動　<span class="kbd">↑</span> 旋轉　<span class="kbd">↓</span> 加速　<span class="kbd">空白鍵</span> 直接落下　<span class="kbd">Tab</span>／<span class="kbd">1~4</span> 換選項　<span class="kbd">C</span> 換形狀　<span class="kbd">P</span> 暫停<br>
     <b>iPad</b>：點磚塊選擇、左右滑動移動、點一下旋轉、快速往下滑直接落下，也可用畫面兩側按鈕。
   </div>
@@ -493,6 +495,7 @@ const SFX={
   glare(){const t=ac();tone(1046,t,.55,{v:.09,to:4186});noise(t,.6,{v:.06,f:900,f2:10000,q:5})},
   correct(){const t=ac();[84,88,91,96].forEach((n,i)=>{tone(midi(n),t+i*.065,.2,{type:'triangle',v:.22});tone(midi(n+12),t+i*.065,.1,{v:.07})});bell(midi(100),t+.28,.2);twinkle(t+.3,10);noise(t+.22,.8,{v:.07,f:4000,f2:13000,type:'highpass'})},
   buzz(){const t=ac();tone(330,t,.14,{type:'square',v:.11,to:310});tone(247,t+.17,.3,{type:'square',v:.11,to:190})},
+  chaos(){const t=ac();for(let i=0;i<7;i++){const f=300+Math.random()*900;tone(f,t+i*.13,.12,{type:'triangle',v:.12,to:f*(Math.random()<.5?2.2:.45)});noise(t+i*.13,.1,{v:.05,f:2000+Math.random()*4000,q:4})}},
   crash(){const t=ac();tone(130,t,.32,{v:.55,to:38});noise(t,.45,{v:.28,f:1800,f2:150,type:'lowpass'});noise(t+.03,.2,{v:.08,f:3500,q:3})},
   line(n=1){const t=ac();const sc=[72,74,76,79,81,84,86,88,91,93,96,98,100];const cnt=5+n*2;
     noise(t,.3+n*.08,{v:.13,f:500,f2:11000,q:2});
@@ -579,7 +582,8 @@ function setTile(key,info){
 }
 function draw(){
   const seen=new Set(),put=(k,i)=>{seen.add(k);setTile(k,i)};
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const g=S.grid[r][c];if(g)put(g.id,{ch:g.ch,cls:g.kind==='gold'?'c'+g.color:'garbage',x:c,y:r,flash:S.flash.has(r)})}
+  const now=performance.now();
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const g=S.grid[r][c];if(g&&!(g.hideUntil>now))put(g.id,{ch:g.ch,cls:g.kind==='gold'?'c'+g.color:'garbage',x:c,y:r,flash:S.flash.has(r)})}
   S.pieces.forEach(p=>cellsOf(p).forEach(([c,r],i)=>put(p.id+'_'+i,{ch:p.ch[i],cls:'c'+p.color,x:c,y:r,dim:!!S.active,ord:p.ch.length>1?i+1:0})));
   if(S.active){const p=S.active,cs=cellsOf(p);
     const d=dropDist(cs);if(d>0)cs.forEach(([c,r],i)=>put('gh'+i,{ch:'',cls:'ghost',x:c,y:r+d}));
@@ -664,7 +668,33 @@ function toast(title,answer,sub){const t=document.createElement('div');t.classNa
 function shake(){board.classList.remove('shake');void board.offsetWidth;board.classList.add('shake')}
 
 /* ================= 出題與流程 ================= */
-function buildQueue(level){const L=BANK[level-1].questions;S.queue=shuffle(L.slice())}
+/* 出題隨機化：
+   1. 每局重新分配題目：依原本難度加上隨機值排序，題目會在相鄰關卡間流動，每關順序也打亂
+   2. 填充題：保留 1～2 個原本設計的干擾選項，其餘從全部成語隨機抽（排除意思相近、可能也算對的成語）
+   3. 湊字題：干擾字一半取自原題、一半從全部成語的字隨機抽，數量隨關卡增加 */
+const SIMILAR=[['好吃懶做','得過且過','守株待兔'],['東張西望','三心二意'],['三心二意','半途而廢','虎頭蛇尾','東張西望'],
+  ['欣喜若狂','眉開眼笑','得意洋洋'],['手足無措','心急如焚'],['畫蛇添足','多此一舉','弄巧成拙'],['井底之蛙','坐井觀天'],
+  ['未雨綢繆','防患未然'],['全神貫注','聚精會神','專心一致','目不轉睛','一心一意'],['一知半解','似懂非懂','囫圇吞棗']];
+const ALLQ=BANK.flatMap((L,i)=>L.questions.map(q=>({...q,band:i+1})));
+const IDIOM_POOL=[...new Set(ALLQ.flatMap(q=>q.type==='fill'?q.options:[q.answer]))];
+const CHAR_POOL=[...new Set(ALLQ.flatMap(q=>[...q.answer,...(q.decoys||[])]))];
+const similar=(a,b)=>SIMILAR.some(g=>g.includes(a)&&g.includes(b));
+function makePlan(){
+  const spread=t=>ALLQ.filter(q=>q.type===t).map(q=>({q,k:q.band+Math.random()*2.4})).sort((a,b)=>a.k-b.k).map(o=>o.q);
+  const F=spread('fill'),B=spread('build');
+  return[1,2,3,4,5].map(L=>shuffle([...F.slice((L-1)*4,L*4),...B.slice((L-1)*4,L*4)]));
+}
+function varyQuestion(q,level){
+  if(q.type==='fill'){
+    const keep=shuffle(q.options.filter(o=>o!==q.answer)).slice(0,1+(Math.random()*2|0));
+    const extra=shuffle(IDIOM_POOL.filter(x=>x!==q.answer&&!q.options.includes(x)&&!similar(x,q.answer)));
+    return{...q,options:[q.answer,...keep,...extra.slice(0,3-keep.length)]};
+  }
+  const n=[3,4,4,5,6][level-1],own=shuffle(q.decoys.slice()).slice(0,Math.ceil(n/2));
+  const others=shuffle(CHAR_POOL.filter(c=>!q.answer.includes(c)&&!own.includes(c))).slice(0,n-own.length);
+  return{...q,decoys:[...own,...others]};
+}
+function buildQueue(level){S.queue=S.plan[level-1].map(q=>varyQuestion(q,level))}
 function resetBoard(){
   S.grid=newGrid();
   for(let i=0;i<LV[S.level].garbage;i++){const r=ROWS-1-i,gap=Math.random()*COLS|0;for(let c=0;c<COLS;c++)if(c!==gap)S.grid[r][c]={id:uid(),ch:'',kind:'garbage'}}
@@ -749,16 +779,15 @@ async function onCorrect(p){
 async function onWrong(p,reason){
   const run=S.run;S.phase='resolve';SFX.buzz();
   setFace('shock',reason==='timeout'?'時間到了～要快一點喔！':pick(LINES_NG));
-  board.classList.add('dropping');
-  if(p)cellsOf(p).forEach(([c,r],i)=>{if(!S.grid[r][c])S.grid[r][c]={id:p.id+'_'+i,ch:p.ch[i],kind:'garbage'}});
-  S.active=null;
-  const fl=S.pieces.sort((a,b)=>maxRow(b)-maxRow(a));S.pieces=[];
-  fl.forEach(o=>{const d=dropDist(cellsOf(o));cellsOf(o,0,d).forEach(([c,r],i)=>{if(r>=0&&r<ROWS&&c>=0&&c<COLS&&!S.grid[r][c])S.grid[r][c]={id:o.id+'_'+i,ch:o.ch[i],kind:'garbage'}})});
-  S.tray=[];renderTray();draw();
-  await sleep(330);if(run!==S.run)return;
-  board.classList.remove('dropping');SFX.crash();shake();
-  // 崩塌：所有方塊各自往下掉，把空洞填滿（對小學生較友善，也容易湊出整排）
-  if(collapse()){board.classList.add('dropping');draw();await sleep(320);if(run!==S.run)return;board.classList.remove('dropping')}
+  // 答錯懲罰：所有磚塊亂竄，最後以隨機方向、隨機位置整塊落下，留下空洞（不會幫忙填平）
+  const movers=[...(p?[p]:[]),...S.pieces];
+  if(!p&&S.tray.length)S.tray.forEach(t=>movers.push({id:uid(),ch:[t.ch],rel:[[0,0]],x:3,y:0,color:t.color}));
+  S.pieces=[];S.active=null;S.tray=[];renderTray();
+  const total=chaos(movers);
+  draw();
+  setTimeout(SFX.chaos,60);
+  await sleep(total);if(run!==S.run)return;
+  draw();SFX.crash();shake();
   S.combo=0;S.total++;
   const q=S.q;S.wrong.push({type:q.type,answer:q.answer,text:q.type==='fill'?q.sentence.replace(/（[\s　]*）/,`（${q.answer}）`):q.meaning});
   updateHUD();revealBlank(false);
@@ -793,6 +822,37 @@ async function clearLines(){
   popText(rows.length>1?`${rows.length} 排消除！ +${pts}`:`消除！ +${pts}`,62);
   setFace('happy',rows.length>1?`${rows.length} 排一起消除！超厲害！`:'消除一整排！好棒～');
   await sleep(450);return rows.length;
+}
+// 幫每塊磚決定亂竄後的落點（隨機旋轉、隨機欄位、整塊硬落），先寫進格子，畫面上用分身播放亂竄動畫；回傳動畫總長
+function chaos(movers){
+  let total=0;
+  shuffle(movers).forEach((o,k)=>{
+    const from=o.rel.map(([a,b])=>[o.x+a,o.y+b]);
+    let spot=null;
+    for(let t=0;t<40&&!spot;t++){let rel=o.rel;for(let n=Math.random()*4|0;n>0;n--)rel=rotRel(rel);
+      const tmp={rel,x:Math.random()*(COLS-W(rel)+1)|0,y:0};if(fitsCells(cellsOf(tmp))){tmp.y=dropDist(cellsOf(tmp));spot=tmp}}
+    const to=spot?cellsOf(spot):from;
+    const made=[];
+    to.forEach(([c,r],i)=>{if(r>=0&&r<ROWS&&c>=0&&c<COLS&&!S.grid[r][c]){const cell={id:uid(),ch:o.ch[i],kind:'garbage'};S.grid[r][c]=cell;made.push(cell)}});
+    // 移除原本的磚塊畫面，改用分身亂竄
+    o.ch.forEach((_,i)=>{const el=tiles.get(o.id+'_'+i);if(el){el.remove();tiles.delete(o.id+'_'+i)}});
+    const mx=Math.min(...to.map(c=>c[0])),my=Math.min(...to.map(c=>c[1]));
+    const fx0=Math.min(...from.map(c=>c[0])),fy0=Math.min(...from.map(c=>c[1]));
+    const g=document.createElement('div');g.className='chaos';g.style.left=mx*CELL+'px';g.style.top=my*CELL+'px';
+    g.style.width=(Math.max(...to.map(c=>c[0]))-mx+1)*CELL+'px';g.style.height=(Math.max(...to.map(c=>c[1]))-my+1)*CELL+'px';
+    to.forEach(([c,r],i)=>{const t=document.createElement('div');t.className='tile c'+o.color;t.textContent=o.ch[i];t.style.left=(c-mx)*CELL+'px';t.style.top=(r-my)*CELL+'px';t.style.transition='none';g.appendChild(t)});
+    fx.appendChild(g);
+    const dx0=(fx0-mx)*CELL,dy0=(fy0-my)*CELL,frames=[{transform:`translate(${dx0}px,${dy0}px) rotate(0deg)`,offset:0}];
+    const hops=3+(Math.random()*2|0);
+    for(let h=1;h<=hops;h++){const f=h/(hops+1);
+      frames.push({transform:`translate(${((Math.random()*COLS|0)-mx)*CELL*.9}px,${dy0*(1-f)+(Math.random()-.5)*CELL*3}px) rotate(${(Math.random()<.5?-1:1)*(90+Math.random()*450)}deg) scale(${.85+Math.random()*.35})`,offset:f*.85})}
+    frames.push({transform:'translate(0,0) rotate(0deg)',offset:1});
+    const dur=900+Math.random()*350,delay=k*90;total=Math.max(total,dur+delay);
+    const a=g.animate(frames,{duration:dur,delay,easing:'cubic-bezier(.45,.05,.55,.95)',fill:'both'});a.onfinish=()=>g.remove();
+    // 被藏起來的格子在動畫結束前先不要顯示
+    made.forEach(cell=>cell.hideUntil=performance.now()+dur+delay);
+  });
+  return total+40;
 }
 function collapse(){
   let moved=false;
@@ -866,7 +926,7 @@ function startGame(level){
   const best=S.best;S=freshState(level);if(best>S.best)S.best=best;S.run=Date.now();
   ['ovStart','ovEnd','ovPause','ovBook'].forEach(id=>$(id).classList.remove('show'));
   ac();bgmPlay();
-  applyTheme(level,true);buildQueue(level);resetBoard();updateHUD();
+  S.plan=makePlan();applyTheme(level,true);buildQueue(level);resetBoard();updateHUD();
   S.q=null;$('qname').textContent='準備開始';$('qtext').textContent='';$('qsub').textContent='';renderTray();
   setFace('happy','一起來挑戰吧！');
   const run=S.run;setTimeout(()=>{if(run===S.run)startQuestion()},2300);
