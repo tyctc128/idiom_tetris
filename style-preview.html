@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>成語方塊｜視覺風格預覽 v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--cute:'Huninn','jf open 粉圓 2.0','Noto Sans TC','Microsoft JhengHei',sans-serif;--cell:44px;--ink:#3e2a5e}
+body[data-theme="1"]{--sky1:#ffd6ea;--sky2:#ffe9f3;--sky3:#bfe6ff;--orb:#fffbe8;--orbglow:rgba(255,236,170,.9);--accent:#ff5fa2;--accent-d:#d6337a;--frame:#ff9ccb;--frame-d:#e8609f;--hill1:#c6efce;--hill2:#8edaa8;--pt1:#ffb3d1;--pt2:#ff86b6}
+body[data-theme="2"]{--sky1:#140f45;--sky2:#2b1f78;--sky3:#5a3aa0;--orb:#fff6c9;--orbglow:rgba(255,240,170,.55);--accent:#22d3c5;--accent-d:#119a90;--frame:#6fe7f0;--frame-d:#2aa8b8;--hill1:#26286b;--hill2:#15174a;--pt1:#fff59a;--pt2:#c8ff8a}
+body[data-theme="3"]{--sky1:#ffb067;--sky2:#ff8a8a;--sky3:#9a63c9;--orb:#fff1c4;--orbglow:rgba(255,190,110,.9);--accent:#ff7a2f;--accent-d:#d4520f;--frame:#ffab66;--frame-d:#e2772a;--hill1:#d4683f;--hill2:#9c3d3d;--pt1:#ff8a3c;--pt2:#e9473a}
+body[data-theme="4"]{--sky1:#d9f0ff;--sky2:#eaf7ff;--sky3:#a9cfff;--orb:#ffffff;--orbglow:rgba(220,245,255,.95);--accent:#3d9bff;--accent-d:#2368d0;--frame:#86c8ff;--frame-d:#4c94e6;--hill1:#ffffff;--hill2:#d3e9ff;--pt1:#ffffff;--pt2:#e2f3ff}
+body[data-theme="5"]{--sky1:#0b0424;--sky2:#2a0d5e;--sky3:#7a2496;--orb:#ffe9a8;--orbglow:rgba(255,200,90,.6);--accent:#ffbf1f;--accent-d:#d98f00;--frame:#c493ff;--frame-d:#8b4fe6;--hill1:#22104a;--hill2:#13072e;--pt1:#ffe27a;--pt2:#ffffff}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:var(--cute);color:var(--ink);overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;background:var(--sky2)}
+button{font-family:inherit;cursor:pointer;color:inherit}
+svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* ===== 背景場景 ===== */
+#scene{position:fixed;inset:0;overflow:hidden;z-index:0;background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 45%,var(--sky3) 100%);transition:background .8s}
+#orb{position:absolute;right:9%;top:12%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,var(--orb) 0 55%,transparent 72%);box-shadow:0 0 120px 60px var(--orbglow)}
+#rays{position:absolute;right:calc(9% + 75px);top:calc(12% + 75px);width:2400px;height:2400px;margin:-1200px -1200px 0 0;background:repeating-conic-gradient(rgba(255,255,255,.22) 0 5deg,transparent 5deg 15deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%);animation:spin 90s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cloud{position:absolute;height:46px;border-radius:40px;background:#fff;opacity:.85;filter:drop-shadow(0 6px 0 rgba(255,255,255,.35));animation:drift linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:60px;height:60px;left:22px;top:-30px}
+.cloud::after{width:42px;height:42px;left:70px;top:-18px}
+@keyframes drift{from{transform:translateX(-30vw)}to{transform:translateX(130vw)}}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:tw ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.15}to{opacity:1}}
+#aurora{position:absolute;left:-10%;right:-10%;top:4%;height:38%;background:linear-gradient(100deg,transparent 10%,rgba(120,255,214,.45) 30%,rgba(140,180,255,.45) 55%,rgba(220,140,255,.35) 75%,transparent 90%);filter:blur(40px);animation:aur 12s ease-in-out infinite alternate}
+@keyframes aur{to{transform:translateX(6%) skewY(-4deg)}}
+#hills{position:absolute;left:0;right:0;bottom:0;height:30vh;width:100%}
+#hills .a{fill:var(--hill1)}#hills .b{fill:var(--hill2)}
+.pt{position:absolute;top:-5vh;pointer-events:none;animation:fall linear infinite}
+.petal{width:12px;height:9px;border-radius:100% 0 100% 0;background:linear-gradient(135deg,var(--pt1),var(--pt2))}
+.snow{width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.9)}
+.fly{top:auto;width:6px;height:6px;border-radius:50%;background:var(--pt1);box-shadow:0 0 10px 4px var(--pt1);animation:flyit ease-in-out infinite alternate}
+.spk{top:auto;color:var(--pt1);text-shadow:0 0 8px var(--pt1);animation:flyit ease-in-out infinite alternate}
+@keyframes fall{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(5vw,55vh) rotate(200deg)}100%{transform:translate(-2vw,112vh) rotate(400deg)}}
+@keyframes flyit{0%{opacity:.1;transform:translate(0,0) scale(.6)}100%{opacity:1;transform:translate(3vw,-4vh) scale(1.1)}}
+
+/* ===== 預覽工具列 ===== */
+#preview{position:fixed;z-index:60;left:50%;bottom:10px;transform:translateX(-50%);width:min(860px,calc(100vw - 24px));display:none;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:center;padding:10px 12px;border-radius:14px;background:rgba(15,10,35,.9);color:#fff;font-family:system-ui,'Microsoft JhengHei',sans-serif;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#preview.open{display:flex}
+#pvToggle{position:fixed;z-index:61;left:6px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;border:none;border-radius:10px;padding:12px 6px;background:rgba(15,10,35,.85);color:#fff;font-family:system-ui,'Microsoft JhengHei',sans-serif;font-size:13px}
+#preview .g{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+#preview .l{opacity:.6;margin-right:2px}
+#preview button{border:1px solid rgba(255,255,255,.25);background:transparent;border-radius:7px;padding:4px 8px;font-size:13px;color:#fff;font-family:system-ui,'Microsoft JhengHei',sans-serif}
+#preview button.on{background:#fff;color:#111}
+#preview button.go{background:#21b866;border-color:#21b866}
+#preview button.bad{background:#e5484d;border-color:#e5484d}
+#preview button.clr{background:#7b5cff;border-color:#7b5cff}
+
+/* ===== 遊戲 ===== */
+#app{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tools{display:flex;gap:10px;justify-content:center}
+.logo{display:flex;align-items:center;gap:3px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+.logo .lt{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:22px;border:2.5px solid #fff;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.logo .lt:nth-child(1){background:#ff5fa2;transform:rotate(-8deg)}
+.logo .lt:nth-child(2){background:#ffbf1f;transform:translateY(-4px) rotate(5deg)}
+.logo .lt:nth-child(3){background:#2fd3a0;transform:rotate(-4deg)}
+.logo .lt:nth-child(4){background:#4aa8ff;transform:translateY(-3px) rotate(7deg)}
+.ribbon{position:relative;padding:8px 34px;background:var(--accent);color:#fff;font-size:20px;letter-spacing:2px;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);text-shadow:0 2px 0 var(--accent-d);box-shadow:inset 0 -4px 0 var(--accent-d)}
+.ribbon b{font-weight:400;opacity:.85;margin-right:8px}
+.ribbon{font-size:17px;padding:6px 26px}
+.stars{display:flex;gap:1px;align-items:center;justify-content:center;flex-wrap:wrap}
+.stars svg{width:20px;height:20px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
+.stars .on{fill:#ffcf2e;stroke:#fff;stroke-width:1.6}
+.stars .off{fill:rgba(255,255,255,.55);stroke:#fff;stroke-width:1.6}
+.stars span{margin-left:6px;font-size:16px;background:#fff;padding:2px 10px;border-radius:999px;box-shadow:0 3px 0 var(--frame-d)}
+.rbtn{width:46px;height:46px;border-radius:50%;border:3px solid #fff;background:var(--accent);color:#fff;font-size:22px;display:grid;place-items:center;box-shadow:0 4px 0 var(--accent-d),0 6px 12px rgba(0,0,0,.15)}
+.rbtn.off{background:#b9b3c9;box-shadow:0 4px 0 #8c86a6}
+
+.stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(250px,320px) auto minmax(180px,220px);gap:26px;justify-content:center;padding:16px 18px 18px}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0}
+.grow{flex:1}
+
+/* 吉祥物 + 對話 */
+.buddy{display:flex;align-items:flex-end;gap:6px}
+.mascot{width:104px;height:104px;flex:none;animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 6px 0 rgba(0,0,0,.12))}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.mascot.jump{animation:jump .5s ease}
+@keyframes jump{30%{transform:translateY(-22px) scale(1.05,.95)}60%{transform:translateY(0) scale(.95,1.05)}}
+.mascot.shake{animation:mshake .5s}
+@keyframes mshake{25%{transform:translateX(-6px) rotate(-6deg)}75%{transform:translateX(6px) rotate(6deg)}}
+.mascot [data-f]{display:none}
+.mascot[data-face="normal"] [data-f="normal"],.mascot[data-face="happy"] [data-f="happy"],.mascot[data-face="shock"] [data-f="shock"]{display:inline}
+.bubble{position:relative;flex:1;background:#fff;border-radius:18px;padding:10px 14px;font-size:16px;line-height:1.45;box-shadow:0 4px 0 var(--frame-d);border:3px solid var(--frame);margin-bottom:22px}
+.bubble::after{content:"";position:absolute;left:-12px;bottom:14px;border:8px solid transparent;border-right:10px solid var(--frame)}
+
+.qbox{position:relative;background:#fff;border-radius:22px;border:4px solid var(--frame);box-shadow:0 6px 0 var(--frame-d),0 14px 26px rgba(0,0,0,.12);padding:26px 18px 16px}
+.qname{position:absolute;left:14px;top:-17px;padding:4px 16px;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;letter-spacing:1px;border:3px solid #fff;box-shadow:0 3px 0 var(--accent-d);transform:rotate(-3deg)}
+.qtext{font-size:clamp(19px,1.9vw,24px);line-height:1.75}
+.blank{display:inline-block;min-width:4.6em;text-align:center;padding:0 6px;margin:0 3px;border-radius:10px;border:2.5px dashed var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,#fff);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{background:color-mix(in srgb,var(--accent) 25%,#fff)}}
+.speak{position:absolute;right:10px;bottom:-18px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:var(--accent);color:#fff;font-size:18px;display:grid;place-items:center;box-shadow:0 3px 0 var(--accent-d)}
+
+.tray{background:rgba(255,255,255,.85);border-radius:18px;border:3px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.08);padding:10px 12px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.tray .hint{font-size:15px;color:#7a6797;text-align:center;line-height:1.5}
+.slots{display:flex;gap:6px}
+.slot{width:calc(var(--cell)*.95);height:calc(var(--cell)*.95);border-radius:26%;border:3px dashed #c9bde0;display:grid;place-items:center}
+.slot .tile{position:relative;left:auto;top:auto;margin:0;width:100%;height:100%}
+.shapes{display:flex;gap:6px;align-items:center}
+.shapes em{font-style:normal;font-size:14px;color:#7a6797;margin-right:2px}
+.shp{width:42px;height:42px;border-radius:12px;border:2.5px solid #e4dcf3;background:#fff;display:grid;place-items:center;padding:0;box-shadow:0 3px 0 #e4dcf3}
+.shp.on{border-color:var(--accent);box-shadow:0 3px 0 var(--accent-d);background:color-mix(in srgb,var(--accent) 12%,#fff)}
+.shp svg{width:26px;height:22px}.shp rect{fill:#7a6797}.shp.on rect{fill:var(--accent)}
+
+/* 控制鈕 */
+.pad{display:flex;gap:12px;justify-content:center;align-items:flex-end}
+.cbtn{width:74px;height:74px;border-radius:50%;border:4px solid #fff;background:linear-gradient(180deg,#fff 0%,#f1ecfa 100%);color:var(--ink);display:grid;place-items:center;font-size:32px;box-shadow:0 6px 0 #cfc5e3,0 10px 18px rgba(0,0,0,.15);position:relative}
+.cbtn small{position:absolute;bottom:-22px;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);white-space:nowrap}
+.cbtn.main{width:92px;height:92px;font-size:40px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 70%,#fff),var(--accent));color:#fff;box-shadow:0 7px 0 var(--accent-d),0 12px 20px rgba(0,0,0,.18)}
+.cbtn:active{transform:translateY(5px);box-shadow:0 1px 0 #cfc5e3}
+.cbtn.main:active{box-shadow:0 2px 0 var(--accent-d)}
+
+/* HUD */
+.hud{position:relative;background:#fff;border-radius:18px;border:3px solid var(--frame);box-shadow:0 5px 0 var(--frame-d);padding:16px 14px 8px;text-align:center}
+.hud label{position:absolute;left:50%;top:-13px;transform:translateX(-50%);padding:1px 14px;border-radius:10px;background:var(--frame-d);color:#fff;font-size:14px;white-space:nowrap}
+.hud .v{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:30px;color:var(--accent);letter-spacing:1px;text-shadow:0 2px 0 color-mix(in srgb,var(--accent) 25%,#fff)}
+.combo{position:relative;align-self:center;padding:6px 22px;transform:rotate(-6deg) skewX(-8deg);background:linear-gradient(90deg,#ff4f8b,#ffb020);color:#fff;border:3px solid #fff;border-radius:14px;box-shadow:0 5px 0 #c2305f,0 0 22px rgba(255,120,80,.55)}
+.combo b{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:36px;font-style:italic;margin-right:4px;text-shadow:0 3px 0 rgba(0,0,0,.2)}
+.combo span{font-size:20px}
+.combo.bump{animation:bump .4s ease}
+@keyframes bump{40%{transform:rotate(-6deg) skewX(-8deg) scale(1.3)}}
+
+/* 棋盤 */
+.boardframe{position:relative;align-self:start;padding:6px;border-radius:24px;background:#fff;box-shadow:0 0 0 5px var(--frame),0 9px 0 5px var(--frame-d),0 24px 40px rgba(0,0,0,.25)}
+.boardframe .corner{position:absolute;width:28px;height:28px;fill:#ffd23f;stroke:#fff;stroke-width:2;filter:drop-shadow(0 2px 0 rgba(0,0,0,.2));z-index:3}
+#board{position:relative;width:calc(var(--cell)*8);height:calc(var(--cell)*14);border-radius:18px;overflow:hidden;
+  background-color:#231a4f;background-image:radial-gradient(circle,rgba(255,255,255,.13) 1.4px,transparent 1.6px),linear-gradient(180deg,rgba(120,90,220,.25),rgba(20,10,50,.3));background-size:var(--cell) var(--cell),100% 100%;background-position:calc(var(--cell)/-2) calc(var(--cell)/-2),0 0}
+#board::before{content:"";position:absolute;left:0;right:0;top:calc(var(--cell)*2);border-top:2px dashed rgba(255,90,120,.45)}
+#board.shake{animation:bshake .45s}
+@keyframes bshake{20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-3px)}60%{transform:translate(-4px,2px)}80%{transform:translate(2px,-1px)}}
+
+.piece{position:absolute;inset:0;pointer-events:none}
+.piece.float{animation:fl 2.4s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(5px)}}
+.tile{--l:#ffc2dc;--c:#ff6fa9;--d:#d93d80;position:absolute;width:calc(var(--cell) - 4px);height:calc(var(--cell) - 4px);margin:2px;border-radius:26%;
+  display:grid;place-items:center;font-family:var(--cute);font-size:calc(var(--cell)*.56);color:#fff;
+  background:linear-gradient(180deg,var(--l) 0%,var(--c) 50%,var(--c) 70%,var(--d) 100%);
+  box-shadow:inset 0 -4px 0 var(--d),inset 0 2px 0 rgba(255,255,255,.8),0 3px 0 rgba(0,0,0,.25);
+  text-shadow:1.5px 0 var(--d),-1.5px 0 var(--d),0 1.5px var(--d),0 -1.5px var(--d),1px 1px var(--d),-1px -1px var(--d),1px -1px var(--d),-1px 1px var(--d),0 3px 0 var(--d)}
+.tile::before{content:"";position:absolute;left:14%;top:7%;width:46%;height:24%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,0));pointer-events:none}
+.tile::after{content:"";position:absolute;right:13%;top:12%;width:9%;height:9%;border-radius:50%;background:#fff;opacity:.9}
+.c0{--l:#ffc2dc;--c:#ff6fa9;--d:#d93d80}
+.c1{--l:#b5f7df;--c:#2fd3a0;--d:#119170}
+.c2{--l:#bfe4ff;--c:#4aa8ff;--d:#2a6fd0}
+.c3{--l:#fff0a8;--c:#ffc02e;--d:#d98a00}
+.c4{--l:#e3cfff;--c:#a774ff;--d:#7542d6}
+.tile.stack{--l:#e6e2f2;--c:#b6afcc;--d:#857da3;color:rgba(255,255,255,.75)}
+.tile.garbage{--l:#e6e2f2;--c:#b6afcc;--d:#857da3;transition:all .4s}
+.ord{position:absolute;left:3px;bottom:1px;font-family:system-ui;font-weight:800;font-size:calc(var(--cell)*.2);color:#fff;text-shadow:none;opacity:.95;z-index:2}
+.sel .tile{animation:selg 1.1s ease-in-out infinite}
+@keyframes selg{50%{box-shadow:inset 0 -4px 0 var(--d),inset 0 2px 0 rgba(255,255,255,.8),0 0 0 3px #fff,0 0 20px 6px rgba(255,255,255,.75)}}
+.ghost{position:absolute;width:calc(var(--cell) - 4px);height:calc(var(--cell) - 4px);margin:2px;border-radius:26%;border:2.5px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.07)}
+
+/* 特效 */
+.tile.glare{animation:glare 1s cubic-bezier(.3,.6,.3,1) forwards;overflow:hidden}
+.tile.glare::before{left:-60%;top:-60%;width:220%;height:220%;border-radius:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.95) 50%,transparent 60%);animation:sweep .55s ease-out forwards}
+@keyframes sweep{from{transform:translateX(-60%)}to{transform:translateX(60%)}}
+@keyframes glare{0%{filter:brightness(1)}35%{filter:brightness(2.2) saturate(1.3);transform:scale(1.15);box-shadow:0 0 34px 12px #fff,0 0 0 3px #fff}100%{filter:brightness(3.2) blur(6px);transform:scale(1.6);opacity:0}}
+.fx{position:absolute;pointer-events:none;transform:translate(-50%,-50%)}
+.core{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff6c0 35%,transparent 70%);animation:core .9s ease-out forwards}
+@keyframes core{0%{transform:translate(-50%,-50%) scale(.2)}100%{transform:translate(-50%,-50%) scale(11);opacity:0}}
+.rays{width:300px;height:300px;border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.85) 0 5deg,transparent 5deg 24deg);-webkit-mask:radial-gradient(circle,#000 0 20%,transparent 68%);mask:radial-gradient(circle,#000 0 20%,transparent 68%);animation:rays 1s ease-out forwards}
+@keyframes rays{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.7) rotate(60deg);opacity:0}}
+.ring{width:30px;height:30px;border-radius:50%;border:4px solid #fff;animation:ring .7s ease-out forwards}
+@keyframes ring{to{transform:translate(-50%,-50%) scale(9);opacity:0;border-width:1px}}
+.spark{position:absolute;pointer-events:none;color:#fff;text-shadow:0 0 8px #fff6b0,0 0 2px #fff}
+.frag{position:absolute;border-radius:4px;pointer-events:none}
+.laser{position:absolute;left:0;width:100%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(255,255,255,.95) 40%,#fff 50%,rgba(255,255,255,.95) 60%,transparent);box-shadow:0 0 30px 10px rgba(255,240,170,.8);transform-origin:center;animation:laser .55s ease-out forwards}
+@keyframes laser{0%{transform:scaleX(0);opacity:1}45%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1) scaleY(.1);opacity:0}}
+.tile.flashw{animation:flashw .45s steps(2) 1}
+@keyframes flashw{50%{filter:brightness(3)}}
+.pop{position:absolute;left:50%;transform:translate(-50%,-50%);font-family:'Noto Sans TC',sans-serif;font-weight:900;font-style:italic;font-size:calc(var(--cell)*.95);white-space:nowrap;pointer-events:none;
+  color:#fff;-webkit-text-stroke:2px var(--accent-d);paint-order:stroke fill;text-shadow:0 4px 0 var(--accent-d),0 0 24px rgba(255,255,255,.8);animation:pop 1.4s cubic-bezier(.2,1.4,.4,1) forwards;z-index:5}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.2) rotate(-12deg);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15) rotate(-4deg);opacity:1}75%{opacity:1}100%{transform:translate(-50%,-120%) scale(1) rotate(-4deg);opacity:0}}
+.toast{position:absolute;left:10px;right:10px;bottom:22%;padding:12px;border-radius:18px;background:#fff;border:4px solid #ff6f91;box-shadow:0 5px 0 #d33f68;text-align:center;font-size:16px;line-height:1.6;animation:toast 2.6s ease forwards;z-index:5}
+.toast b{font-size:26px;color:#ff4f7e;letter-spacing:3px}
+@keyframes toast{0%{opacity:0;transform:scale(.7)}12%{opacity:1;transform:scale(1.05)}18%,85%{opacity:1;transform:none}100%{opacity:0}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
+
+/* 過關轉場 */
+#stageIn{position:fixed;inset:0;z-index:45;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+#stageIn .band{position:absolute;left:-10%;right:-10%;height:190px;background:linear-gradient(90deg,var(--accent-d),var(--accent),var(--frame));transform:skewY(-6deg) scaleX(0);box-shadow:0 0 0 6px #fff,0 20px 50px rgba(0,0,0,.35)}
+#stageIn .txt{position:relative;text-align:center;color:#fff;opacity:0;transform:skewY(-6deg)}
+#stageIn .txt div{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-style:italic;font-size:30px;letter-spacing:8px;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+#stageIn .txt h2{margin:0;font-family:var(--cute);font-weight:400;font-size:72px;letter-spacing:14px;-webkit-text-stroke:3px var(--accent-d);paint-order:stroke fill;text-shadow:0 6px 0 var(--accent-d)}
+#stageIn.go .band{animation:band 2.2s cubic-bezier(.7,0,.3,1) forwards}
+#stageIn.go .txt{animation:stxt 2.2s ease forwards}
+@keyframes band{0%{transform:skewY(-6deg) scaleX(0);transform-origin:left}25%{transform:skewY(-6deg) scaleX(1);transform-origin:left}75%{transform:skewY(-6deg) scaleX(1);transform-origin:right}100%{transform:skewY(-6deg) scaleX(0);transform-origin:right}}
+@keyframes stxt{0%,15%{opacity:0;transform:skewY(-6deg) translateX(-120px)}30%{opacity:1;transform:skewY(-6deg) translateX(0)}70%{opacity:1;transform:skewY(-6deg) translateX(0)}85%,100%{opacity:0;transform:skewY(-6deg) translateX(120px)}}
+
+@media (max-width:1000px){
+  body{overflow:auto}
+  #app{height:auto}
+  .stage{grid-template-columns:1fr;justify-items:center}
+  .col{width:100%;max-width:560px}
+  .left .grow,.right .grow{display:none}
+  .right{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center}
+  .right .hud{min-width:120px}
+  .boardframe{order:0}
+}
+</style>
+</head>
+<body data-theme="1">
+<div id="scene">
+  <div id="rays"></div><div id="aurora"></div><div id="orb"></div>
+  <div id="sky"></div>
+  <svg id="hills" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+    <path class="a" d="M0 150 C160 70 300 90 470 140 C640 190 760 50 940 90 C1110 130 1240 40 1440 110 L1440 300 L0 300Z"/>
+    <path class="b" d="M0 230 C200 170 360 220 560 200 C760 180 880 245 1080 215 C1250 190 1350 220 1440 205 L1440 300 L0 300Z"/>
+  </svg>
+  <div id="particles"></div>
+</div>
+
+<div id="preview">
+  <div class="g"><span class="l">關卡</span><button data-t="1" class="on">1 春日竹林</button><button data-t="2">2 夏夜荷塘</button><button data-t="3">3 秋楓書院</button><button data-t="4">4 冬雪宮殿</button><button data-t="5">5 星空龍宮</button></div>
+  <div class="g"><span class="l">題型</span><button data-m="fill" class="on">成語填充</button><button data-m="build">湊成語</button></div>
+  <div class="g"><span class="l">特效</span><button id="dOk" class="go">答對</button><button id="dBad" class="bad">答錯</button><button id="dLine" class="clr">整排消除</button></div>
+  <div class="g"><span class="l">音效試聽</span>
+    <button data-s="select">選取</button><button data-s="move">移動</button><button data-s="rotate">旋轉</button><button data-s="land">落地</button>
+    <button data-s="correct">答對</button><button data-s="wrong">答錯</button><button data-s="line1">消1排</button><button data-s="line4">消4排</button>
+    <button data-s="combo">連擊</button><button data-s="levelup">過關</button><button data-s="danger">危險</button><button data-s="gameover">結束</button>
+    <button id="bgmBtn">▶ 背景音樂</button>
+  </div>
+</div>
+
+<button id="pvToggle">⚙ 預覽控制</button>
+
+<div id="app">
+  <div class="stage">
+    <div class="col left">
+      <div class="brand">
+        <div class="logo"><span class="lt">成</span><span class="lt">語</span><span class="lt">方</span><span class="lt">塊</span></div>
+        <div class="ribbon" id="ribbon"><b>第一關</b>春日竹林</div>
+      </div>
+      <div class="buddy">
+        <svg class="mascot" id="mascot" data-face="normal" viewBox="0 0 120 120" aria-hidden="true">
+          <defs><linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--accent) 45%,#fff)"/><stop offset=".6" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent-d)"/></linearGradient></defs>
+          <path d="M58 26 C52 10 74 6 70 18" style="stroke:var(--accent-d)" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <rect x="16" y="24" width="88" height="80" rx="28" fill="url(#mg)" stroke="#fff" stroke-width="4"/>
+          <ellipse cx="42" cy="38" rx="17" ry="6" fill="#fff" opacity=".65"/>
+          <g data-f="normal"><ellipse cx="44" cy="62" rx="8" ry="11" fill="#2b1d4a"/><ellipse cx="76" cy="62" rx="8" ry="11" fill="#2b1d4a"/><circle cx="47" cy="57" r="3.6" fill="#fff"/><circle cx="79" cy="57" r="3.6" fill="#fff"/><circle cx="42" cy="66" r="1.7" fill="#fff"/><circle cx="74" cy="66" r="1.7" fill="#fff"/><path d="M55 79 Q60 84 65 79" stroke="#2b1d4a" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+          <g data-f="happy"><path d="M35 64 Q44 52 53 64" stroke="#2b1d4a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M67 64 Q76 52 85 64" stroke="#2b1d4a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M51 75 Q60 90 69 75 Z" fill="#b8325f" stroke="#2b1d4a" stroke-width="2.5" stroke-linejoin="round"/></g>
+          <g data-f="shock"><path d="M37 55 L51 62 L37 69" stroke="#2b1d4a" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M83 55 L69 62 L83 69" stroke="#2b1d4a" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="60" cy="81" rx="6" ry="7" fill="#b8325f" stroke="#2b1d4a" stroke-width="2.5"/><path d="M96 34 q4 8 0 12 q-4 -4 0 -12z" fill="#8fd3ff"/></g>
+          <ellipse cx="31" cy="76" rx="7" ry="4" fill="#ff7fa8" opacity=".75"/><ellipse cx="89" cy="76" rx="7" ry="4" fill="#ff7fa8" opacity=".75"/>
+        </svg>
+        <div class="bubble" id="bubble">一起來挑戰吧！選出正確的成語～</div>
+      </div>
+      <div class="qbox">
+        <div class="qname" id="qname">第 4 題 · 成語填充</div>
+        <div class="qtext" id="qtext"></div>
+        <button class="speak" title="朗讀題目"><svg class="ic" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></button>
+      </div>
+      <div class="tray" id="tray"></div>
+      <div class="grow"></div>
+      <div class="pad">
+        <button class="cbtn" data-s="move"><svg class="ic" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><small>左移</small></button>
+        <button class="cbtn" data-s="move"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><small>加速</small></button>
+        <button class="cbtn" data-s="move"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg><small>右移</small></button>
+      </div>
+    </div>
+
+    <div class="boardframe">
+      <svg class="corner" style="left:-14px;top:-14px" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9"/></svg>
+      <svg class="corner" style="right:-14px;top:-14px" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9"/></svg>
+      <div id="board"></div>
+    </div>
+
+    <div class="col right">
+      <div class="tools">
+        <button class="rbtn" id="musicBtn" title="背景音樂"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+        <button class="rbtn" title="音效"><svg class="ic" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button>
+        <button class="rbtn" title="暫停"><svg class="ic" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+      </div>
+      <div class="stars" id="stars"></div>
+      <div class="hud"><label>分數</label><div class="v" id="score">2,350</div></div>
+      <div class="combo" id="combo"><b id="comboN">3</b><span>連擊!</span></div>
+      <div class="hud"><label>消除行數</label><div class="v">12</div></div>
+      <div class="hud"><label>最高分</label><div class="v">5,820</div></div>
+      <div class="hud"><label>錯題本</label><div class="v">2</div></div>
+      <div class="grow"></div>
+      <div class="pad">
+        <button class="cbtn" data-s="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><small>旋轉</small></button>
+        <button class="cbtn main" data-s="land"><svg class="ic" viewBox="0 0 24 24"><path d="M7 5l5 5 5-5"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg><small>直接落下</small></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stageIn"><div class="band"></div><div class="txt"><div id="siNum">STAGE 1</div><h2 id="siName">春日竹林</h2></div></div>
+<div id="flash"></div>
+
+<script>
+/* ================= 音效引擎（Web Audio 即時合成，二次元風） ================= */
+let AC=null,OUT,BGMG;
+function ac(){
+  if(!AC){
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    const comp=AC.createDynamicsCompressor();comp.connect(AC.destination);
+    OUT=AC.createGain();OUT.gain.value=.55;OUT.connect(comp);
+    const dl=AC.createDelay();dl.delayTime.value=.13;const fb=AC.createGain();fb.gain.value=.28;const wet=AC.createGain();wet.gain.value=.22;
+    OUT.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(comp);
+    const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4200;
+    BGMG=AC.createGain();BGMG.gain.value=.5;BGMG.connect(lp);lp.connect(comp);
+  }
+  if(AC.state==='suspended')AC.resume();
+  return AC.currentTime+.01;
+}
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function tone(f,t,d,o={}){const{type='sine',v=.3,to=null,a=.005,dest=OUT}=o;const os=AC.createOscillator(),g=AC.createGain();os.type=type;os.frequency.setValueAtTime(f,t);if(to)os.frequency.exponentialRampToValueAtTime(to,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);os.connect(g).connect(dest);os.start(t);os.stop(t+a+d+.05)}
+function noise(t,d,o={}){const{v=.2,f=2000,f2=null,q=1,type='bandpass',dest=OUT}=o;const n=Math.floor(AC.sampleRate*(d+.05)),b=AC.createBuffer(1,n,AC.sampleRate),ch=b.getChannelData(0);for(let i=0;i<n;i++)ch[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const fl=AC.createBiquadFilter();fl.type=type;fl.frequency.setValueAtTime(f,t);if(f2)fl.frequency.exponentialRampToValueAtTime(f2,t+d);fl.Q.value=q;const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl).connect(g).connect(dest);s.start(t);s.stop(t+d+.05)}
+function bell(f,t,v=.14){[[1,1],[2.01,.45],[3.02,.22],[4.17,.1]].forEach(([m,a])=>tone(f*m,t,.55/m+.12,{v:v*a,a:.002}))}
+function twinkle(t,n=8,v=.05){for(let i=0;i<n;i++)bell(2600+Math.random()*2600,t+i*.035,v)}
+const SFX={
+  select(){const t=ac();tone(988,t,.05,{type:'square',v:.07});tone(1976,t+.05,.12,{type:'triangle',v:.2});bell(2637,t+.05,.06)},
+  move(){const t=ac();tone(1250,t,.035,{type:'triangle',v:.13,to:1500})},
+  rotate(){const t=ac();tone(620,t,.1,{type:'triangle',v:.2,to:1600});noise(t,.08,{v:.04,f:3000,f2:9000})},
+  land(){const t=ac();tone(190,t,.14,{v:.45,to:65});noise(t,.06,{v:.12,f:900,type:'lowpass'});tone(1400,t,.03,{type:'triangle',v:.06})},
+  pop(t){tone(820,t,.09,{v:.22,to:200});noise(t,.07,{v:.08,f:2500,q:2})},
+  glare(){const t=ac();tone(1046,t,.55,{v:.09,to:4186});noise(t,.6,{v:.06,f:900,f2:10000,q:5})},
+  correct(){const t=ac();[84,88,91,96].forEach((n,i)=>{tone(midi(n),t+i*.065,.2,{type:'triangle',v:.22});tone(midi(n+12),t+i*.065,.1,{v:.07})});bell(midi(100),t+.28,.2);twinkle(t+.3,10);noise(t+.22,.8,{v:.07,f:4000,f2:13000,type:'highpass'})},
+  buzz(){const t=ac();tone(330,t,.14,{type:'square',v:.11,to:310});tone(247,t+.17,.3,{type:'square',v:.11,to:190})},
+  crash(){const t=ac();tone(130,t,.32,{v:.55,to:38});noise(t,.45,{v:.28,f:1800,f2:150,type:'lowpass'});noise(t+.03,.2,{v:.08,f:3500,q:3})},
+  wrong(){SFX.buzz();setTimeout(SFX.crash,420)},
+  line(n=1){const t=ac();const sc=[72,74,76,79,81,84,86,88,91,93,96,98,100];const cnt=5+n*2;
+    noise(t,.3+n*.08,{v:.13,f:500,f2:11000,q:2});
+    for(let i=0;i<cnt;i++)tone(midi(sc[i%sc.length]),t+i*.04,.12,{type:'triangle',v:.17});
+    const e=t+cnt*.04;SFX.pop(e);twinkle(e,6+n*3,.06);
+    if(n>=2)[84,88,91].forEach(m=>tone(midi(m),e,.45,{type:'triangle',v:.09}));
+    if(n>=4){[[84,0],[88,.1],[91,.2],[96,.3]].forEach(([m,d])=>tone(midi(m),e+.15+d,.5,{type:'square',v:.06}));[96,100,103].forEach(m=>tone(midi(m),e+.5,.9,{type:'triangle',v:.1}));twinkle(e+.5,16,.06)}},
+  line1(){SFX.line(1)},line4(){SFX.line(4)},
+  combo(k=3){const t=ac();const b=84+Math.min(k,8)*2;tone(midi(b),t,.07,{type:'square',v:.08});tone(midi(b+7),t+.07,.18,{type:'triangle',v:.2});bell(midi(b+12),t+.07,.08)},
+  levelup(){const t=ac();[[79,0],[84,.12],[88,.24],[91,.36]].forEach(([m,d])=>{tone(midi(m),t+d,.12,{type:'square',v:.08});tone(midi(m),t+d,.12,{type:'triangle',v:.14})});[84,88,91,96].forEach(m=>tone(midi(m),t+.5,1,{type:'triangle',v:.1}));tone(midi(96),t+.5,1,{type:'square',v:.05});twinkle(t+.5,18,.05)},
+  danger(){const t=ac();for(let i=0;i<2;i++){tone(75,t+i*.6,.12,{v:.7,to:42});tone(75,t+i*.6+.17,.15,{v:.55,to:42})}},
+  gameover(){const t=ac();[84,79,76,72,67,60].forEach((m,i)=>tone(midi(m),t+i*.18,.3,{type:'triangle',v:.17}));tone(midi(48),t+1.1,1,{type:'square',v:.06})},
+};
+/* 背景音樂：王道進行 IV–V–iii–vi 的動漫風循環 */
+const MEL=[81,84,81,79,77,79,81,84, 83,86,83,81,79,81,83,86, 79,83,88,86,83,79,76,79, 81,84,88,86,84,83,81,null];
+const BASS=[41,43,40,45],PAD=[[65,69,72],[67,71,74],[64,67,71],[69,72,76]];
+let bgmOn=false,bgmTimer=null,bgmStep=0,bgmNext=0;
+function bgmTick(){const bpm=116+theme*8,st=60/bpm/2;
+  while(bgmNext<AC.currentTime+.12){const s=bgmStep%32,bar=s>>3,t=bgmNext;
+    const m=MEL[s];if(m){tone(midi(m),t,st*.85,{type:'square',v:.045,dest:BGMG});tone(midi(m),t,st*.9,{type:'triangle',v:.06,dest:BGMG})}
+    tone(midi(BASS[bar]+(s%2?12:0)),t,st*.8,{type:'triangle',v:.16,dest:BGMG});
+    if(s%8===0)PAD[bar].forEach(p=>tone(midi(p),t,st*7.5,{type:'triangle',v:.025,a:.08,dest:BGMG}));
+    if(s%4===0)tone(140,t,.12,{v:.5,to:40,dest:BGMG});
+    if(s%4===2)noise(t,.1,{v:.12,f:2500,type:'highpass',dest:BGMG});
+    noise(t,.03,{v:.04,f:8000,type:'highpass',dest:BGMG});
+    bgmStep++;bgmNext+=st}}
+function toggleBgm(){ac();bgmOn=!bgmOn;if(bgmOn){bgmNext=AC.currentTime+.05;bgmTimer=setInterval(bgmTick,25)}else clearInterval(bgmTimer);
+  document.getElementById('bgmBtn').textContent=bgmOn?'■ 停止音樂':'▶ 背景音樂';document.getElementById('bgmBtn').classList.toggle('on',bgmOn);document.getElementById('musicBtn').classList.toggle('off',!bgmOn)}
+
+/* ================= 畫面 ================= */
+const COLS=8,ROWS=14;
+const THEMES={
+  1:{n:'第一關',en:'STAGE 1',name:'春日竹林',pt:'petal',cnt:26,clouds:true,rays:true},
+  2:{n:'第二關',en:'STAGE 2',name:'夏夜荷塘',pt:'fly',cnt:30,stars:true},
+  3:{n:'第三關',en:'STAGE 3',name:'秋楓書院',pt:'petal',cnt:26,clouds:true,rays:true},
+  4:{n:'第四關',en:'STAGE 4',name:'冬雪宮殿',pt:'snow',cnt:50,clouds:true,aurora:true},
+  5:{n:'第五關',en:'STAGE 5',name:'星空龍宮',pt:'spk',cnt:30,stars:true,aurora:true},
+};
+const STACK=[[11,'.....##.'],[12,'##.###.#'],[13,'###.####']];
+const STACK_CH='勤能補拙廢寢忘食自言自語心平氣和黑白分明';
+const MODES={
+  fill:{name:'第 4 題 · 成語填充',text:'哥哥（<span class="blank">？</span>），每天只想輕鬆度日，不想努力工作。',answer:'好吃懶做',meaning:'貪吃又懶惰，不肯做事。',
+    pieces:[{ch:'好吃懶做',cells:[[0,2],[0,3],[0,4],[1,4]],c:0,sel:true},{ch:'勤能補拙',cells:[[3,0],[3,1],[3,2],[3,3]],c:1},{ch:'廢寢忘食',cells:[[5,1],[6,1],[7,1],[6,2]],c:2},{ch:'自言自語',cells:[[1,6],[2,6],[2,7],[3,7]],c:4}]},
+  build:{name:'第 5 題 · 看解釋湊成語',text:'眉毛舒展、眼睛含笑，形容非常高興的樣子。',answer:'眉開眼笑',meaning:'形容非常高興的樣子。',
+    pieces:[{ch:'眉開眼笑',cells:[[2,3],[3,3],[4,3],[3,4]],c:0,sel:true},{ch:'愁',cells:[[0,1]],c:1},{ch:'苦',cells:[[6,0]],c:2},{ch:'哭',cells:[[6,6]],c:3},{ch:'臉',cells:[[0,7]],c:4},{ch:'笑',cells:[[7,3]],c:1}]},
+};
+let theme=1,mode='fill',busy=false,combo=3,CELL=44;
+const $=id=>document.getElementById(id),board=$('board');
+
+function fitCell(){
+  const wide=innerWidth>1000;
+  const availH=wide?innerHeight-72:innerHeight*.66;
+  const availW=wide?innerWidth-320-220-52-60:innerWidth-50;
+  CELL=Math.max(30,Math.min(80,Math.floor(Math.min(availH/ROWS,availW/COLS))));
+  document.documentElement.style.setProperty('--cell',CELL+'px');
+}
+function tile(ch,c,r,cls){const t=document.createElement('div');t.className='tile '+(cls||'');t.textContent=ch;t.style.left=c*CELL+'px';t.style.top=r*CELL+'px';t.dataset.c=c;t.dataset.r=r;return t}
+function occSet(){const s=new Set();STACK.forEach(([r,p])=>[...p].forEach((x,c)=>{if(x==='#')s.add(c+','+r)}));return s}
+function dropDist(cells,occ){let d=0;while(cells.every(([c,r])=>r+d+1<ROWS&&!occ.has(c+','+(r+d+1))))d++;return d}
+
+function render(){
+  board.innerHTML='';const m=MODES[mode];
+  $('qname').textContent=m.name;$('qtext').innerHTML=m.text;
+  let k=0;STACK.forEach(([r,p])=>[...p].forEach((x,c)=>{if(x==='#')board.appendChild(tile(STACK_CH[k++%STACK_CH.length],c,r,'stack'))}));
+  const sel=m.pieces.find(p=>p.sel),d=dropDist(sel.cells,occSet());
+  sel.cells.forEach(([c,r])=>{const g=document.createElement('div');g.className='ghost';g.style.left=c*CELL+'px';g.style.top=(r+d)*CELL+'px';board.appendChild(g)});
+  m.pieces.forEach((p,i)=>{const el=document.createElement('div');el.className='piece float'+(p.sel?' sel':'');el.style.animationDelay=(-i*.6)+'s';
+    p.cells.forEach(([c,r],j)=>{const t=tile(p.ch[j],c,r,'c'+p.c);if(p.sel&&p.ch.length>1){const o=document.createElement('span');o.className='ord';o.textContent=j+1;t.appendChild(o)}el.appendChild(t)});
+    p.el=el;board.appendChild(el)});
+  const tray=$('tray');
+  if(mode==='fill'){tray.innerHTML='<div class="hint">點一條答案磚塊選擇它<br>移動、旋轉後放到底部（形狀不能改）</div>'}
+  else{const S={I:[[0,1],[1,1],[2,1],[3,1]],L:[[0,0],[0,1],[0,2],[1,2]],T:[[0,0],[1,0],[2,0],[1,1]],S:[[1,0],[2,0],[0,1],[1,1]],O:[[1,0],[2,0],[1,1],[2,1]]};
+    tray.innerHTML='<div class="slots">'+[...m.answer].map(ch=>`<div class="slot"><div class="tile c0">${ch}</div></div>`).join('')+'</div>'+
+    '<div class="shapes"><em>換形</em>'+Object.entries(S).map(([n,cs])=>`<button class="shp${n==='T'?' on':''}" data-s="select"><svg viewBox="0 0 4 3">${cs.map(([x,y])=>`<rect x="${x+.1}" y="${y+.1}" width=".8" height=".8" rx=".22"/>`).join('')}</svg></button>`).join('')+'</div>'}
+  bindSfx(tray);
+  setFace('normal');
+}
+function setFace(f,txt){const ms=$('mascot');ms.dataset.face=f;ms.classList.remove('jump','shake');void ms.getBBox();if(f==='happy')ms.classList.add('jump');if(f==='shock')ms.classList.add('shake');
+  $('bubble').textContent=txt||(mode==='fill'?'一起來挑戰吧！選出正確的成語～':'找出四個字，湊成正確的成語喔！')}
+
+function applyTheme(n,anim){
+  theme=n;document.body.dataset.theme=n;const T=THEMES[n];
+  $('ribbon').innerHTML=`<b>${T.n}</b>${T.name}`;
+  const star='<polygon points="12,2 15,9 22,9.5 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9.5 9,9"/>';
+  $('stars').innerHTML=Array.from({length:8},(_,i)=>`<svg viewBox="0 0 24 24" class="${i<3?'on':'off'}">${star}</svg>`).join('')+'<span>3 / 8</span>';
+  $('rays').style.display=T.rays?'':'none';$('aurora').style.display=T.aurora?'':'none';
+  const sky=$('sky');sky.innerHTML='';
+  if(T.clouds)for(let i=0;i<5;i++){const c=document.createElement('div');c.className='cloud';c.style.width=(120+Math.random()*90)+'px';c.style.top=(6+Math.random()*40)+'%';c.style.animationDuration=(70+Math.random()*60)+'s';c.style.animationDelay=(-Math.random()*120)+'s';sky.appendChild(c)}
+  if(T.stars)for(let i=0;i<90;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*70+'%';const z=1+Math.random()*2.5;s.style.width=s.style.height=z+'px';s.style.animationDuration=(1+Math.random()*3)+'s';s.style.animationDelay=(-Math.random()*3)+'s';sky.appendChild(s)}
+  const pc=$('particles');pc.innerHTML='';
+  for(let i=0;i<T.cnt;i++){const s=document.createElement('div');s.className='pt '+T.pt;s.style.left=Math.random()*100+'vw';
+    if(T.pt==='fly'||T.pt==='spk'){s.style.top=(10+Math.random()*80)+'vh';s.style.animationDuration=(1.4+Math.random()*2.5)+'s';if(T.pt==='spk'){s.textContent=i%3?'✦':'✧';s.style.fontSize=(8+Math.random()*14)+'px'}}
+    else{s.style.animationDuration=(8+Math.random()*10)+'s';const z=.7+Math.random()*.9;s.style.scale=z}
+    s.style.animationDelay=(-Math.random()*16)+'s';pc.appendChild(s)}
+  if(anim){const si=$('stageIn');$('siNum').textContent=T.en;$('siName').textContent=T.name;si.classList.remove('go');void si.offsetWidth;si.classList.add('go');SFX.levelup()}
+}
+
+function centerOf(cells){const xs=cells.map(c=>c[0]),ys=cells.map(c=>c[1]);return[(Math.min(...xs)+Math.max(...xs)+1)/2*CELL,(Math.min(...ys)+Math.max(...ys)+1)/2*CELL]}
+function fx(cls,x,y){const e=document.createElement('div');e.className='fx '+cls;e.style.left=x+'px';e.style.top=y+'px';board.appendChild(e);return e}
+function sparks(x,y,n,spread){for(let i=0;i<n;i++){const s=document.createElement('div');s.className='spark';s.textContent=i%3?'✦':'★';s.style.left=x+'px';s.style.top=y+'px';s.style.fontSize=(10+Math.random()*16)+'px';board.appendChild(s);
+  const a=Math.random()*Math.PI*2,d=CELL*(1+Math.random()*spread);
+  s.animate([{transform:'translate(-50%,-50%) scale(.3)',opacity:1},{transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d}px)) rotate(${Math.random()*360}deg) scale(1)`,opacity:0}],{duration:800+Math.random()*500,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'})}}
+function shatter(t){const x=parseFloat(t.style.left)+CELL/2,y=parseFloat(t.style.top)+CELL/2,col=getComputedStyle(t).getPropertyValue('--c').trim();
+  for(let i=0;i<9;i++){const f=document.createElement('div');f.className='frag';const z=CELL*(.14+Math.random()*.24);f.style.cssText+=`left:${x}px;top:${y}px;width:${z}px;height:${z}px;background:${col};border:2px solid #fff`;board.appendChild(f);
+    const a=Math.random()*Math.PI*2,d=CELL*(1+Math.random()*2.4);
+    f.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+CELL*1.6}px) rotate(${Math.random()*540}deg) scale(.3)`,opacity:0}],{duration:700+Math.random()*450,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'})}
+  t.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.35)',opacity:0}],{duration:150,fill:'forwards'})}
+function popText(txt,yPct){const p=document.createElement('div');p.className='pop';p.textContent=txt;p.style.top=yPct+'%';board.appendChild(p)}
+
+function demoCorrect(){
+  if(busy)return;busy=true;const m=MODES[mode],sel=m.pieces.find(p=>p.sel);
+  board.querySelectorAll('.ghost').forEach(g=>g.remove());m.pieces.forEach(p=>p.el.classList.remove('float'));
+  const [cx,cy]=centerOf(sel.cells);
+  SFX.correct();setTimeout(SFX.glare,80);
+  $('flash').animate([{opacity:0},{opacity:.5},{opacity:0}],{duration:420});
+  sel.el.classList.remove('sel');[...sel.el.children].forEach((t,i)=>{t.style.animationDelay=(i*60)+'ms';t.classList.add('glare')});
+  fx('rays',cx,cy);fx('core',cx,cy);fx('ring',cx,cy);setTimeout(()=>fx('ring',cx,cy),160);sparks(cx,cy,28,3.5);
+  setTimeout(()=>{const ts=m.pieces.filter(p=>!p.sel);ts.forEach((p,i)=>setTimeout(()=>{SFX.pop(ac());[...p.el.children].forEach(shatter)},i*70))},200);
+  popText('答對了！',36);
+  combo++;$('comboN').textContent=combo;const cb=$('combo');cb.classList.remove('bump');void cb.offsetWidth;cb.classList.add('bump');setTimeout(()=>SFX.combo(combo),450);
+  $('score').textContent=(2350+150).toLocaleString();
+  setFace('happy',`太厲害了！就是「${m.answer}」！`);
+  setTimeout(()=>{busy=false;render();$('score').textContent='2,350'},2600);
+}
+function demoWrong(){
+  if(busy)return;busy=true;const m=MODES[mode],occ=occSet();
+  board.querySelectorAll('.ghost').forEach(g=>g.remove());SFX.buzz();setFace('shock','啊～好可惜！再仔細想一想～');
+  const ps=[...m.pieces].sort((a,b)=>Math.max(...b.cells.map(c=>c[1]))-Math.max(...a.cells.map(c=>c[1])));let maxT=0;
+  ps.forEach((p,i)=>{p.el.classList.remove('float','sel');const d=dropDist(p.cells,occ);p.cells.forEach(([c,r])=>occ.add(c+','+(r+d)));
+    const dur=170+d*24,delay=120+i*60;maxT=Math.max(maxT,dur+delay);
+    p.el.animate([{transform:'translateY(0)'},{transform:`translateY(${d*CELL}px)`}],{duration:dur,delay,easing:'cubic-bezier(.55,0,1,.45)',fill:'forwards'})});
+  setTimeout(()=>{SFX.crash();board.classList.remove('shake');void board.offsetWidth;board.classList.add('shake');
+    board.querySelectorAll('.piece .tile').forEach(t=>t.classList.add('garbage'));
+    combo=0;$('comboN').textContent=0;
+    const to=document.createElement('div');to.className='toast';to.innerHTML=`正確答案是<br><b>${m.answer}</b><br>${m.meaning}`;board.appendChild(to)},maxT);
+  setTimeout(()=>{busy=false;combo=3;$('comboN').textContent=3;render()},maxT+2900);
+}
+function demoLine(){
+  if(busy)return;busy=true;const row=13,gapC=3;
+  board.querySelectorAll('.ghost').forEach(g=>g.remove());
+  const nt=tile('語',gapC,0,'c3');board.appendChild(nt);SFX.select();
+  nt.animate([{transform:'translateY(0)'},{transform:`translateY(${row*CELL}px)`}],{duration:420,easing:'cubic-bezier(.55,0,1,.45)',fill:'forwards'});
+  setTimeout(()=>{
+    SFX.land();setTimeout(()=>SFX.line(1),60);
+    const rowTiles=[...board.querySelectorAll('.tile.stack')].filter(t=>+t.dataset.r===row);rowTiles.push(nt);
+    rowTiles.forEach(t=>t.classList.add('flashw'));
+    const lz=document.createElement('div');lz.className='laser';lz.style.top=row*CELL+'px';lz.style.height=CELL+'px';board.appendChild(lz);
+    $('flash').animate([{opacity:0},{opacity:.25},{opacity:0}],{duration:300});
+    setTimeout(()=>{rowTiles.forEach(t=>{const x=parseFloat(t.style.left)+CELL/2,y=row*CELL+CELL/2;sparks(x,y,4,1.6);t.animate([{transform:t===nt?`translateY(${row*CELL}px) scale(1)`:'scale(1)',opacity:1},{transform:t===nt?`translateY(${row*CELL}px) scale(1.4)`:'scale(1.4)',opacity:0}],{duration:220,fill:'forwards'})});
+      popText('消除！ +100',70)},380);
+    setTimeout(()=>{board.querySelectorAll('.tile.stack').forEach(t=>{if(+t.dataset.r<row)t.animate([{transform:'translateY(0)'},{transform:`translateY(${CELL}px)`}],{duration:200,easing:'cubic-bezier(.5,0,.8,1.4)',fill:'forwards'})});SFX.land()},640);
+  },430);
+  setTimeout(()=>{busy=false;render()},2600);
+}
+
+function bindSfx(root){root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>SFX[b.dataset.s]&&SFX[b.dataset.s]())}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));applyTheme(+b.dataset.t,true)});
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{if(busy)return;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));mode=b.dataset.m;SFX.select();render()});
+$('pvToggle').onclick=()=>{const o=$('preview').classList.toggle('open');$('pvToggle').textContent=o?'✕ 收起':'⚙ 預覽控制'};
+$('dOk').onclick=demoCorrect;$('dBad').onclick=demoWrong;$('dLine').onclick=demoLine;
+$('bgmBtn').onclick=toggleBgm;$('musicBtn').onclick=toggleBgm;$('musicBtn').classList.add('off');
+bindSfx(document);
+board.addEventListener('click',()=>{if(!busy)SFX.select()});
+addEventListener('resize',()=>{if(busy)return;fitCell();render()});
+applyTheme(1,false);fitCell();render();
+document.fonts&&document.fonts.ready.then(()=>{fitCell();render()});
+</script>
+</body>
+</html>
