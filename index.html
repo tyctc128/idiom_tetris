@@ -655,16 +655,18 @@ function pickIdioms(level,n,state){
   while(out.length<n){
     // 同一局先把每個成語都出過一輪，題庫用完才開始重複（重複時避開最近 6 題）
     let pool=IDIOMS.filter(x=>!state.used.has(x.w));
-    if(!pool.length){state.used=new Set(state.last.slice(-6));pool=IDIOMS.filter(x=>!state.used.has(x.w))}
+    // 題庫用完才重複，且重複的成語至少隔 8 題（不會同一關出兩次）
+    if(!pool.length){state.used=new Set(state.last.slice(-8));pool=IDIOMS.filter(x=>!state.used.has(x.w))}
     const fresh=pool.filter(x=>rIdx(x.w)<0),cand=fresh.some(x=>Math.abs(x.lv-level)-minD<=1)?fresh:pool;
     const x=weightedPick(cand,x=>(LV_W[Math.abs(x.lv-level)-minD]||.02)*(rIdx(x.w)<0?1:.3));
     out.push(x);state.used.add(x.w);state.last.push(x.w);
   }
   return out;
 }
-function makeQuestion(x,type,level){
+// v：指定用第幾句例句（填充）或第幾個解釋（湊成語）；沒指定就隨機
+function makeQuestion(x,type,level,v){
   if(type==='fill'&&x.s.length){
-    const i=Math.random()*x.s.length|0;
+    const i=v!=null&&x.s[v]?v:Math.random()*x.s.length|0;
     // 課本設計的錯誤選項保留 1～3 個，其餘從題庫隨機抽（排除意思相近的成語）
     const designed=shuffle((x.opts[i]||[]).filter(o=>o!==x.w)),keep=designed.slice(0,1+(Math.random()*Math.min(3,designed.length)|0));
     const others=shuffle(IDIOMS.filter(y=>y.w!==x.w&&!keep.includes(y.w)&&!similar(x,y))).map(y=>y.w);
@@ -672,23 +674,33 @@ function makeQuestion(x,type,level){
     return{type:'fill',answer:x.w,sentence:x.s[i],options:[x.w,...opts],meaning:x.m};
   }
   // 看解釋湊成語：解釋與解釋2 隨機挑一個，干擾字以對應那組為主，再隨機補到該關數量
-  const n=[3,4,4,5,6][level-1],k=x.m2&&Math.random()<.5?1:0,meaning=k?x.m2:x.m;
+  const n=[3,4,4,5,6][level-1],k=x.m2?(v!=null?v:(Math.random()<.5?1:0)):0,meaning=k?x.m2:x.m;
   const designed=shuffle((x.dz[k]||[]).filter(c=>!x.w.includes(c)));
   const tempt=shuffle([...new Set(IDIOMS.filter(y=>y.w!==x.w&&(similar(x,y)||y.lv===x.lv)).flatMap(y=>[...y.w]))].filter(c=>!x.w.includes(c)&&!designed.includes(c)));
   const own=designed.length?designed.slice(0,Math.min(n,designed.length)):tempt.slice(0,Math.ceil(n/2));
   const rest=shuffle(CHAR_POOL.filter(c=>!x.w.includes(c)&&!own.includes(c))).slice(0,Math.max(0,n-own.length));
   return{type:'build',answer:x.w,meaning,decoys:[...own,...rest]};
 }
+// 每個成語有好幾種題目版本：每句例句一題填充、解釋／解釋2 各一題湊成語
+function variantsOf(x){const v=x.s.map((_,i)=>({type:'fill',v:i}));v.push({type:'build',v:0});if(x.m2)v.push({type:'build',v:1});return v}
 function makePlan(){
-  const state={used:new Set(),last:[]};
+  const state={used:new Set(),last:[],vars:{}};
   return[1,2,3,4,5].map(L=>{
     const xs=pickIdioms(L,8,state),nFill=3+(Math.random()*3|0);
-    const types=shuffle(xs.map((_,i)=>i<nFill?'fill':'build'));
-    return xs.map((x,i)=>({x,type:types[i]}));
+    const want=shuffle(xs.map((_,i)=>i<nFill?'fill':'build'));
+    return xs.map((x,i)=>{
+      // 同一局用過的版本不再出；同一個成語第二次出現時一定換題型
+      const used=state.vars[x.w]||(state.vars[x.w]=[]);
+      let cand=variantsOf(x).filter(a=>!used.some(u=>u.type===a.type&&u.v===a.v));
+      if(!cand.length){used.length=0;cand=variantsOf(x)}
+      const prefer=used.length?cand.filter(a=>a.type!==used[used.length-1].type):cand.filter(a=>a.type===want[i]);
+      const c=pick(prefer.length?prefer:cand);used.push(c);
+      return{x,type:c.type,v:c.v};
+    });
   });
 }
-// 題目在進入該關時才產生（選項、例句、干擾字每次不同）
-function buildQueue(level){S.queue=S.plan[level-1].map(o=>makeQuestion(o.x,o.type,level))}
+// 題目在進入該關時才產生（選項、干擾字每次不同）
+function buildQueue(level){S.queue=S.plan[level-1].map(o=>makeQuestion(o.x,o.type,level,o.v))}
 function resetBoard(){
   S.grid=newGrid();
   for(let i=0;i<LV[S.level].garbage;i++){const r=ROWS-1-i,gap=Math.random()*COLS|0;for(let c=0;c<COLS;c++)if(c!==gap)S.grid[r][c]={id:uid(),ch:'',kind:'garbage'}}
