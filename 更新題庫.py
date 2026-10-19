@@ -1,10 +1,10 @@
 # 修改題庫之後執行這個檔案，把題庫同步到 index.html 裡：
-#   python 更新題庫.py                  → 使用 question2.json（目前遊戲用的題庫）
+#   python 更新題庫.py                  → 使用 questions3.json（目前遊戲用的題庫）
 #   python 更新題庫.py questions.json   → 改用其他題庫檔
 import io, json, os, sys
 
 here = os.path.dirname(os.path.abspath(__file__))
-src = sys.argv[1] if len(sys.argv) > 1 else 'question2.json'
+src = sys.argv[1] if len(sys.argv) > 1 else 'questions3.json'
 bank = json.load(io.open(os.path.join(here, src), encoding='utf-8'))
 lst = bank['成語庫']
 
